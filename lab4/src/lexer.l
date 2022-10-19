@@ -176,7 +176,60 @@ commentlineend \n
         return ASSIGN;
     #endif
 }
-
+"==" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("EQ\t==");
+    #else
+        return EQ;
+    #endif
+}
+">=" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("GEQ\t>=");
+    #else
+        return GEQ;
+    #endif
+}
+"<=" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("LEQ\t<=");
+    #else
+        return LEQ;
+    #endif
+}
+"!=" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("NEQ\t!=");
+    #else
+        return NEQ;
+    #endif
+}
+"+=" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("PLUSASSIGN\t+=");
+    #else
+        return PLUSASSIGN;
+    #endif
+}
+"-=" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("MINUASSIGN\t-=");
+    #else
+        return MINUASSIGN;
+}
+"*=" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("MULASSIGN\t*=");
+    #else 
+        return MULASSIGN;
+}
+"/=" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("DIVASSIGN\t/=");
+    #else
+        return DIVASSIGN;
+    #endif
+}
 
 "<" {
     #ifdef ONLY_FOR_LEX
@@ -201,6 +254,56 @@ commentlineend \n
         return ADD;
     #endif
 }
+"-" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("MINUS\t-");
+    #else
+        return MINUS;
+    #endif
+}
+"*" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("MUL\t*");
+    #else
+        return MUL;
+    #endif
+}
+"/" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("DIV\t/");
+    #else
+        return DIV;
+    #endif
+}
+"%" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("MOD\t%");
+    #else
+        return MOD;
+    #endif
+}
+"&&" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("AND\t&&");
+    #else
+        return AND;
+    #endif
+}
+"||" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("OR\t||");
+    #else
+        return OR;
+    #endif
+}
+"!" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("NOT\t!");
+    #else
+        return NOT;
+    #endif
+}
+
 ";" {
     #ifdef ONLY_FOR_LEX
         DEBUG_FOR_LAB4("SEMICOLON\t;");
