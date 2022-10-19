@@ -29,10 +29,65 @@
     #endif
 %}
 
-DECIMIAL ([1-9][0-9]*|0)
+// 数据类型
+INT "int"
+
+// 变量和常量
+DEC ([1-9][0-9]*|0)
+HEX 0[Xx]([1-9a-fA-F][0-9a-fA-F]*|0)
+OCT 0([1-7][0-7]*|0)
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
-WHITE [\t ]
+
+FORMATCHAR [\r\n\t ]+
+
+// 语句
+CONST "const"
+VOID "void"
+IF "if"
+ELSE "else"
+WHILE "while"
+BREAK "break"
+CONTINUE "continue"
+RETURN "return"
+
+// 表达式、关系、逻辑运算
+EQ "=="
+GEQ ">="
+LEQ "<="
+NEQ "!="
+ASSIGN "="
+PLUSASSIGN "+="
+MINUSASSIGN "-="
+MULASSIGN "*="
+DIVASSIGN "/="
+GRA ">"
+LES "<"
+PLUS "+"
+MINUS "-"
+MUL "*"
+DIV "/"
+MOD "%"
+AND "&&"
+OR "||"
+NOT "!"
+
+LPAREN "("
+RPAREN ")"
+LBRACE "{"
+RBRACE "}"
+SEMICOLON ";"
+
+// 注释
+commentbegin "/*"
+commentelement .|\n
+commentend "*/"
+%x COMMENT
+commentlinebegin "//"
+commentlineelement .
+commentlineend \n
+%x COMMENTLINE
+
 %x BLOCKCOMMENT
 
 %%
