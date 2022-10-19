@@ -36,7 +36,7 @@ WHITE [\t ]
 %x BLOCKCOMMENT
 
 %%
-
+//数据类型
 "int" {
     /*
     * Questions: 
@@ -49,6 +49,14 @@ WHITE [\t ]
         return INT;
     #endif
 }
+"float" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("FLOAT\tfloat");
+    #else
+        return FLOAT;
+    #endif
+}
+
 "void" {
     #ifdef ONLY_FOR_LEX
         DEBUG_FOR_LAB4("VOID\tvoid");
@@ -77,6 +85,34 @@ WHITE [\t ]
         return RETURN;
     #endif
 }
+"const" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("CONST\tconst");
+    #else
+        return CONST;
+    #endif
+}
+"while" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("WHILE\twhile");
+    #else
+        return WHILE;
+    #endif
+};
+"break" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("BREAK\tbreak");
+    #else
+        return BREAK;
+    #endif
+};
+"continue" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("CONTINUE\tcontinue");
+    #else
+        return CONTINUE;
+    #endif
+};
 
 "=" {
     #ifdef ONLY_FOR_LEX
@@ -85,13 +121,24 @@ WHITE [\t ]
         return ASSIGN;
     #endif
 }
+
+
 "<" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LESS\t<");
+        DEBUG_FOR_LAB4("LES\t<");
     #else
-        return LESS;
+        return LES;
     #endif
 }
+
+">" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("g=GRA\t>");
+    #else
+        return GRA;
+    #endif
+}
+
 "+" {
     #ifdef ONLY_FOR_LEX
         DEBUG_FOR_LAB4("ADD\t+");
