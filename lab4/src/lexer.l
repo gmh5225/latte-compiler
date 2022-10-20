@@ -29,19 +29,21 @@
     #endif
 %}
 
-// 数据类型
+    // 数据类型
 INT "int"
+FLOAT "float"
 
-// 变量和常量
-DEC ([1-9][0-9]*|0)
+    // 变量和常量，包括十进制浮点数
+DEC ([1-9][0-9]*|0)(.[0-9]+)?
 HEX 0[Xx]([1-9a-fA-F][0-9a-fA-F]*|0)
 OCT 0([1-7][0-7]*|0)
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
+WHITE [\t ]
 
 FORMATCHAR [\r\n\t ]+
 
-// 语句
+    // 语句
 CONST "const"
 VOID "void"
 IF "if"
@@ -51,7 +53,7 @@ BREAK "break"
 CONTINUE "continue"
 RETURN "return"
 
-// 表达式、关系、逻辑运算
+    // 表达式、关系、逻辑运算
 EQ "=="
 GEQ ">="
 LEQ "<="
@@ -78,7 +80,7 @@ LBRACE "{"
 RBRACE "}"
 SEMICOLON ";"
 
-// 注释
+    // 注释
 commentbegin "/*"
 commentelement .|\n
 commentend "*/"
@@ -88,10 +90,8 @@ commentlineelement .
 commentlineend \n
 %x COMMENTLINE
 
-%x BLOCKCOMMENT
-
 %%
-//数据类型
+    // 数据类型
 "int" {
     /*
     * Questions: 
@@ -216,12 +216,14 @@ commentlineend \n
         DEBUG_FOR_LAB4("MINUASSIGN\t-=");
     #else
         return MINUASSIGN;
+    #endif
 }
 "*=" {
     #ifdef ONLY_FOR_LEX
         DEBUG_FOR_LAB4("MULASSIGN\t*=");
     #else 
         return MULASSIGN;
+    #endif
 }
 "/=" {
     #ifdef ONLY_FOR_LEX
@@ -275,13 +277,7 @@ commentlineend \n
         return DIV;
     #endif
 }
-"%" {
-    #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MOD\t%");
-    #else
-        return MOD;
-    #endif
-}
+
 "&&" {
     #ifdef ONLY_FOR_LEX
         DEBUG_FOR_LAB4("AND\t&&");
@@ -340,8 +336,46 @@ commentlineend \n
     #endif
 }
 
+{DEC} {
+    #ifdef ONLY_FOR_LEX
+        string s = "DEC\t";
+        s.append(yytext);
+        DEBUG_FOR_LAB4(s);
+    #else
+        return HEX;
+    #endif
+}
+
+{HEX} {
+    #ifdef ONLY_FOR_LEX
+        int t = atoi(yytext);
+        sprintf(yytext, "HEX\t%d", t);
+        DEBUG_FOR_LAB4(yytext);
+    #else
+        return HEX;
+    #endif
+}
+
+{OCT} {
+    #ifdef ONLY_FOR_LEX
+        int t = atoi(yytext);
+        sprintf(yytext, "OCT\t%d", t);
+        DEBUG_FOR_LAB4(yytext);
+    #else
+        return OCT;
+    #endif
+}
+
 {EOL} yylineno++;
 {WHITE}
+
+{commentbegin} {BEGIN COMMENT;}
+<COMMENT>{commentelement} {}
+<COMMENT>{commentend} {BEGIN INITIAL;}
+{commentlinebegin} {BEGIN COMMENTLINE;}
+<COMMENTLINE>{commentlineelement} {}
+<COMMENTLINE>{commentlineend} {BEGIN INITIAL;}
+
 %%
 
 #ifdef ONLY_FOR_LEX
