@@ -14,6 +14,8 @@
     #define YY_NO_UNPUT
     #define YY_NO_INPUT
     #include <string>
+    #include <math.h>
+    #include <vector>
 
     #ifdef ONLY_FOR_LEX
     #include <ostream>
@@ -22,8 +24,13 @@
     extern FILE *yyin; 
     extern FILE *yyout;
 
+	int id_num = 0;
+	char id_list[100][20];
+    
+    
+
     void DEBUG_FOR_LAB4(std::string s){
-        std::string DEBUG_INFO = "[DEBUG LAB4]: \t" + s + "\n";
+        std::string DEBUG_INFO =s + "\n";
         fputs(DEBUG_INFO.c_str(), yyout);
     }
     #endif
@@ -363,6 +370,33 @@ commentlineend \n
         DEBUG_FOR_LAB4(yytext);
     #else
         return OCT;
+    #endif
+}
+
+{ID} {
+    #ifdef ONLY_FOR_LEX
+	    int id_match = 0;
+	    int id = 0;
+	    for (int i = 0; i < id_num; i++) {
+		    if (strcmp(yytext, id_list[i])==0) {
+			    id_match = 1;
+	    		id = i;
+		    	break;
+		    }
+	    }
+	    if (!id_match) {
+	    	id = id_num;
+	    	strcpy(id_list[id], yytext);
+	    	id_num++;
+	    }
+        string s="ID\t";
+        s.append(yytext);
+        string t ="\t";
+        sprintf(t,"%d",id);
+        s.append(t);
+        DEBUG_FOR_LAB4(yytext);
+    #else
+        return ID;
     #endif
 }
 
