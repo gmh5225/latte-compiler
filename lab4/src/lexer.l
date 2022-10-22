@@ -389,12 +389,9 @@ commentlineend \n
 	    	strcpy(id_list[id], yytext);
 	    	id_num++;
 	    }
-        string s="ID\t";
+        string s = "ID\t";
         s.append(yytext);
-        string t ="\t";
-        sprintf(t,"%d",id);
-        s.append(t);
-        DEBUG_FOR_LAB4(yytext);
+        DEBUG_FOR_LAB4(s); 
     #else
         return ID;
     #endif
