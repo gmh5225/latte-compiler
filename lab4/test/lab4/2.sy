@@ -4,7 +4,7 @@ int f(){
 	int a;
 	a = 0;
 	while(a<10){
-		a = a * 2345;
+		a = a * 0x2345;
 	}
 	return a;
 }

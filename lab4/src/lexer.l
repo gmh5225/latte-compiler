@@ -30,7 +30,11 @@
     
 
     void DEBUG_FOR_LAB4(std::string s){
-        std::string DEBUG_INFO =s + "\n";
+        std::string DEBUG_INFO =s;
+        char lineno[10];
+        sprintf(lineno, "%d", yylineno);
+        DEBUG_INFO.append(lineno);
+        DEBUG_INFO.append("\n");
         fputs(DEBUG_INFO.c_str(), yyout);
     }
     #endif
@@ -41,8 +45,9 @@ INT "int"
 FLOAT "float"
 
     // 变量和常量，包括十进制浮点数
+HEX 0[X|x]([1-9a-fA-F][0-9a-fA-F]*|0)
 DEC ([1-9][0-9]*|0)(.[0-9]+)?
-HEX 0[Xx]([1-9a-fA-F][0-9a-fA-F]*|0)
+
 OCT 0([1-7][0-7]*|0)
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
@@ -106,14 +111,14 @@ commentlineend \n
     *   Q2: What is "INT" actually?
     */
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("INT\tint");
+        DEBUG_FOR_LAB4("INT\t\t\tint\t\t\t");
     #else
         return INT;
     #endif
 }
 "float" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("FLOAT\tfloat");
+        DEBUG_FOR_LAB4("FLOAT\t\tfloat\t\t");
     #else
         return FLOAT;
     #endif
@@ -121,56 +126,56 @@ commentlineend \n
 
 "void" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("VOID\tvoid");
+        DEBUG_FOR_LAB4("VOID\t\t\tvoid\t\t\t");
     #else
         return VOID;
     #endif 
 }
 "if" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("IF\tif");
+        DEBUG_FOR_LAB4("IF\t\t\tif\t\t\t");
     #else
         return IF;
     #endif
 };
 "else" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("ELSE\telse");
+        DEBUG_FOR_LAB4("ELSE\t\telse\t\t");
     #else
         return ELSE;
     #endif
 };
 "return" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("RETURN\treturn");
+        DEBUG_FOR_LAB4("RETURN\t\treturn\t\t");
     #else
         return RETURN;
     #endif
 }
 "const" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("CONST\tconst");
+        DEBUG_FOR_LAB4("CONST\t\tconst\t\t");
     #else
         return CONST;
     #endif
 }
 "while" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("WHILE\twhile");
+        DEBUG_FOR_LAB4("WHILE\t\twhile\t\t");
     #else
         return WHILE;
     #endif
 };
 "break" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("BREAK\tbreak");
+        DEBUG_FOR_LAB4("BREAK\t\tbreak\t\t");
     #else
         return BREAK;
     #endif
 };
 "continue" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("CONTINUE\tcontinue");
+        DEBUG_FOR_LAB4("CONTINUE\tcontinue\t");
     #else
         return CONTINUE;
     #endif
@@ -178,63 +183,63 @@ commentlineend \n
 
 "=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("ASSIGN\t=");
+        DEBUG_FOR_LAB4("ASSIGN\t\t=\t\t\t");
     #else
         return ASSIGN;
     #endif
 }
 "==" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("EQ\t==");
+        DEBUG_FOR_LAB4("EQ\t\t\t==\t\t\t");
     #else
         return EQ;
     #endif
 }
 ">=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("GEQ\t>=");
+        DEBUG_FOR_LAB4("GEQ\t\t>=\t\t\t");
     #else
         return GEQ;
     #endif
 }
 "<=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LEQ\t<=");
+        DEBUG_FOR_LAB4("LEQ\t\t\t<=\t\t\t");
     #else
         return LEQ;
     #endif
 }
 "!=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("NEQ\t!=");
+        DEBUG_FOR_LAB4("NEQ\t\t\t!=\t\t\t");
     #else
         return NEQ;
     #endif
 }
 "+=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("PLUSASSIGN\t+=");
+        DEBUG_FOR_LAB4("PLUSASSIGN\t+=\t\t\t");
     #else
         return PLUSASSIGN;
     #endif
 }
 "-=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MINUASSIGN\t-=");
+        DEBUG_FOR_LAB4("MINUASSIGN\t-=\t\t\t");
     #else
         return MINUASSIGN;
     #endif
 }
 "*=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MULASSIGN\t*=");
+        DEBUG_FOR_LAB4("MULASSIGN\t*=\t\t\t");
     #else 
         return MULASSIGN;
     #endif
 }
 "/=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("DIVASSIGN\t/=");
+        DEBUG_FOR_LAB4("DIVASSIGN\t/=\t\t\t");
     #else
         return DIVASSIGN;
     #endif
@@ -242,7 +247,7 @@ commentlineend \n
 
 "<" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LES\t<");
+        DEBUG_FOR_LAB4("LES\t\t\t<\t\t\t");
     #else
         return LES;
     #endif
@@ -250,7 +255,7 @@ commentlineend \n
 
 ">" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("g=GRA\t>");
+        DEBUG_FOR_LAB4("g=GRA\t\t\t>\t\t\t");
     #else
         return GRA;
     #endif
@@ -258,28 +263,28 @@ commentlineend \n
 
 "+" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("ADD\t+");
+        DEBUG_FOR_LAB4("ADD\t\t\t+\t\t\t");
     #else
         return ADD;
     #endif
 }
 "-" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MINUS\t-");
+        DEBUG_FOR_LAB4("MINUS\t\t\t-\t\t\t");
     #else
         return MINUS;
     #endif
 }
 "*" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MUL\t*");
+        DEBUG_FOR_LAB4("MUL\t\t\t*\t\t\t");
     #else
         return MUL;
     #endif
 }
 "/" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("DIV\t/");
+        DEBUG_FOR_LAB4("DIV\t\t\t/\t\t\t");
     #else
         return DIV;
     #endif
@@ -287,21 +292,21 @@ commentlineend \n
 
 "&&" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("AND\t&&");
+        DEBUG_FOR_LAB4("AND\t\t\t&&\t\t\t");
     #else
         return AND;
     #endif
 }
 "||" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("OR\t||");
+        DEBUG_FOR_LAB4("OR\t\t\t||\t\t\t");
     #else
         return OR;
     #endif
 }
 "!" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("NOT\t!");
+        DEBUG_FOR_LAB4("NOT\t\t\t!\t\t\t");
     #else
         return NOT;
     #endif
@@ -309,35 +314,35 @@ commentlineend \n
 
 ";" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("SEMICOLON\t;");
+        DEBUG_FOR_LAB4("SEMICOLON\t;\t\t\t");
     #else
         return SEMICOLON;
     #endif
 }
 "(" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LPAREN\t(");
+        DEBUG_FOR_LAB4("LPAREN\t\t(\t\t\t");
     #else
         return LPAREN;
     #endif
 }
 ")" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("RPAREN\t)");
+        DEBUG_FOR_LAB4("RPAREN\t\t)\t\t\t");
     #else
     return RPAREN;
     #endif
 }
 "{" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LBRACE\t{");
+        DEBUG_FOR_LAB4("LBRACE\t\t{\t\t\t");
     #else
         return LBRACE;
     #endif
 }
 "}" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("RBRACE\t}");
+        DEBUG_FOR_LAB4("RBRACE\t\t}\t\t\t");
     #else
         return RBRACE;
     #endif
@@ -345,9 +350,11 @@ commentlineend \n
 
 {DEC} {
     #ifdef ONLY_FOR_LEX
-        string s = "DEC\t";
-        s.append(yytext);
-        DEBUG_FOR_LAB4(s);
+        // string s = "DEC\t\t\t";
+        // s.append(yytext);
+        // s.append("\t\t\t");
+        // DEBUG_FOR_LAB4(s);
+        fprintf(yyout, "%-12s%-12s%-12d\n", "DEC", yytext, yylineno);
     #else
         return HEX;
     #endif
@@ -356,8 +363,9 @@ commentlineend \n
 {HEX} {
     #ifdef ONLY_FOR_LEX
         int t = atoi(yytext);
-        sprintf(yytext, "HEX\t%d", t);
-        DEBUG_FOR_LAB4(yytext);
+        // sprintf(yytext, "HEX\t\t\t%d\t\t\t", t);
+        // DEBUG_FOR_LAB4(yytext);
+        fprintf(yyout, "%-12s%-12d%-12d\n", "HEX", t, yylineno);
     #else
         return HEX;
     #endif
@@ -366,8 +374,9 @@ commentlineend \n
 {OCT} {
     #ifdef ONLY_FOR_LEX
         int t = atoi(yytext);
-        sprintf(yytext, "OCT\t%d", t);
-        DEBUG_FOR_LAB4(yytext);
+        // sprintf(yytext, "OCT\t\t\t%d\t\t\t", t);
+        // DEBUG_FOR_LAB4(yytext);
+        fprintf(yyout, "%-12s%-12d%-12d\n", "OCT", t, yylineno);
     #else
         return OCT;
     #endif
@@ -389,9 +398,11 @@ commentlineend \n
 	    	strcpy(id_list[id], yytext);
 	    	id_num++;
 	    }
-        string s = "ID\t";
-        s.append(yytext);
-        DEBUG_FOR_LAB4(s); 
+        // string s = "ID\t\t\t";
+        // s.append(yytext);
+        // s.append("\t\t\t");
+        // DEBUG_FOR_LAB4(s); 
+        fprintf(yyout, "%-12s%-12s%-12d\n", "ID", yytext, yylineno);
     #else
         return ID;
     #endif
@@ -426,6 +437,8 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     }
 
+    std::string title="token\t\tlexeme\t\tlineno\n";
+    fputs(title.c_str(), yyout);
     yylex();
     return 0;
 }
