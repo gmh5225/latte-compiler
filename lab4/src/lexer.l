@@ -45,10 +45,9 @@ INT "int"
 FLOAT "float"
 
     // 变量和常量，包括十进制浮点数
-HEX 0[X|x]([1-9a-fA-F][0-9a-fA-F]*|0)
-DEC ([1-9][0-9]*|0)(.[0-9]+)?
-
-OCT 0([1-7][0-7]*|0)
+DEC (([1-9][0-9]*|0)(\.[0-9]+)?)
+HEX (0[Xx](([1-9a-fA-F][0-9a-fA-F]*)|0))
+OCT (0(([1-7][0-7]*)|0))
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
 WHITE [\t ]
@@ -356,13 +355,14 @@ commentlineend \n
         // DEBUG_FOR_LAB4(s);
         fprintf(yyout, "%-12s%-12s%-12d\n", "DEC", yytext, yylineno);
     #else
-        return HEX;
+        return DEC;
     #endif
 }
 
 {HEX} {
     #ifdef ONLY_FOR_LEX
-        int t = atoi(yytext);
+        char *endptr = NULL;
+        int t = strtol(yytext, &endptr, 16);
         // sprintf(yytext, "HEX\t\t\t%d\t\t\t", t);
         // DEBUG_FOR_LAB4(yytext);
         fprintf(yyout, "%-12s%-12d%-12d\n", "HEX", t, yylineno);
@@ -373,7 +373,8 @@ commentlineend \n
 
 {OCT} {
     #ifdef ONLY_FOR_LEX
-        int t = atoi(yytext);
+        char *endptr = NULL;
+        int t = strtol(yytext, &endptr, 8);
         // sprintf(yytext, "OCT\t\t\t%d\t\t\t", t);
         // DEBUG_FOR_LAB4(yytext);
         fprintf(yyout, "%-12s%-12d%-12d\n", "OCT", t, yylineno);
