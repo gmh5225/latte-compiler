@@ -346,6 +346,20 @@ commentlineend \n
         return RBRACE;
     #endif
 }
+"[" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("LSQUARE\t\t]\t\t\t");
+    #else
+        return LSQUARE;
+    #endif
+}
+"]" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("RSQUARE\t\t[\t\t\t");
+    #else
+        return RSQUARE;
+    #endif
+}
 
 {DEC} {
     #ifdef ONLY_FOR_LEX
