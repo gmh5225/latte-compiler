@@ -348,14 +348,14 @@ commentlineend \n
 }
 "[" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LSQUARE\t\t]\t\t\t");
+        DEBUG_FOR_LAB4("LSQUARE\t\t[\t\t\t");
     #else
         return LSQUARE;
     #endif
 }
 "]" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("RSQUARE\t\t[\t\t\t");
+        DEBUG_FOR_LAB4("RSQUARE\t\t]\t\t\t");
     #else
         return RSQUARE;
     #endif
@@ -367,7 +367,14 @@ commentlineend \n
         // s.append(yytext);
         // s.append("\t\t\t");
         // DEBUG_FOR_LAB4(s);
-        fprintf(yyout, "%-12s%-12s%-12d\n", "DEC", yytext, yylineno);
+        int t = atoi(yytext);
+        float f = atof(yytext);
+        if((t - f) != 0) {
+            fprintf(yyout, "%-12s%-12f%-12d\n", "DEC", f, yylineno);
+        }
+        else {
+            fprintf(yyout, "%-12s%-12d%-12d\n", "DEC", t, yylineno);
+        }
     #else
         return DEC;
     #endif
@@ -427,11 +434,11 @@ commentlineend \n
 {WHITE}
 
 {commentbegin} {BEGIN COMMENT;}
-<COMMENT>{commentelement} {}
+<COMMENT>{commentelement} {if(!strcmp(yytext, "\n")) yylineno++;}
 <COMMENT>{commentend} {BEGIN INITIAL;}
 {commentlinebegin} {BEGIN COMMENTLINE;}
 <COMMENTLINE>{commentlineelement} {}
-<COMMENTLINE>{commentlineend} {BEGIN INITIAL;}
+<COMMENTLINE>{commentlineend} {yylineno++; BEGIN INITIAL;}
 
 %%
 

@@ -3,6 +3,7 @@
 int f(){
 	int a;
 	a = 0;
+	float x = 0.123;
 	while(a<010){
 		a = a * 0x2345;
 	}
@@ -26,7 +27,7 @@ int main(){
 	{
 		int a;
 	}
-	int b;
+	int b[3];
 	return 0;
 }
 
