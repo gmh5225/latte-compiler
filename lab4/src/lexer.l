@@ -24,18 +24,28 @@
     extern FILE *yyin; 
     extern FILE *yyout;
 
+    int base = 0;
+    int offset = 0;
+    int tmplineno = 0;
 	int id_num = 0;
 	char id_list[100][20];
-    
-    
+    char *scope[100];
 
-    void DEBUG_FOR_LAB4(std::string s){
-        std::string DEBUG_INFO =s;
-        char lineno[10];
-        sprintf(lineno, "%d", yylineno);
-        DEBUG_INFO.append(lineno);
-        DEBUG_INFO.append("\n");
-        fputs(DEBUG_INFO.c_str(), yyout);
+    void DEBUG_FOR_LAB4(string tok, string val){
+        if(tmplineno != yylineno) {
+            tmplineno = yylineno;
+            offset = base;
+        }
+        if(tok == "ID") {
+            if(base == 0) {
+                scope[0] = yytext;
+            }
+            fprintf(yyout, "%-12s%-12s%-12d%-12d%-12p\n", tok.c_str(), val.c_str(), yylineno, offset, scope[base]);
+        }
+        else {
+            fprintf(yyout, "%-12s%-12s%-12d%-12d\n", tok.c_str(), val.c_str(), yylineno, offset);
+        }
+        offset += val.length();
     }
     #endif
 %}
@@ -110,14 +120,14 @@ commentlineend \n
     *   Q2: What is "INT" actually?
     */
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("INT\t\t\tint\t\t\t");
+        DEBUG_FOR_LAB4("INT", "int");
     #else
         return INT;
     #endif
 }
 "float" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("FLOAT\t\tfloat\t\t");
+        DEBUG_FOR_LAB4("FLOAT", "float");
     #else
         return FLOAT;
     #endif
@@ -125,56 +135,56 @@ commentlineend \n
 
 "void" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("VOID\t\t\tvoid\t\t\t");
+        DEBUG_FOR_LAB4("VOID", "void");
     #else
         return VOID;
     #endif 
 }
 "if" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("IF\t\t\tif\t\t\t");
+        DEBUG_FOR_LAB4("IF", "if");
     #else
         return IF;
     #endif
 };
 "else" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("ELSE\t\telse\t\t");
+        DEBUG_FOR_LAB4("ELSE", "else");
     #else
         return ELSE;
     #endif
 };
 "return" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("RETURN\t\treturn\t\t");
+        DEBUG_FOR_LAB4("RETURN", "return");
     #else
         return RETURN;
     #endif
 }
 "const" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("CONST\t\tconst\t\t");
+        DEBUG_FOR_LAB4("CONST", "const");
     #else
         return CONST;
     #endif
 }
 "while" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("WHILE\t\twhile\t\t");
+        DEBUG_FOR_LAB4("WHILE", "while");
     #else
         return WHILE;
     #endif
 };
 "break" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("BREAK\t\tbreak\t\t");
+        DEBUG_FOR_LAB4("BREAK", "break");
     #else
         return BREAK;
     #endif
 };
 "continue" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("CONTINUE\tcontinue\t");
+        DEBUG_FOR_LAB4("CONTINUE", "continue");
     #else
         return CONTINUE;
     #endif
@@ -182,63 +192,63 @@ commentlineend \n
 
 "=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("ASSIGN\t\t=\t\t\t");
+        DEBUG_FOR_LAB4("ASSIGN", "=");
     #else
         return ASSIGN;
     #endif
 }
 "==" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("EQ\t\t\t==\t\t\t");
+        DEBUG_FOR_LAB4("EQ", "==");
     #else
         return EQ;
     #endif
 }
 ">=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("GEQ\t\t>=\t\t\t");
+        DEBUG_FOR_LAB4("GEQ", ">=");
     #else
         return GEQ;
     #endif
 }
 "<=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LEQ\t\t\t<=\t\t\t");
+        DEBUG_FOR_LAB4("LEQ", "<=");
     #else
         return LEQ;
     #endif
 }
 "!=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("NEQ\t\t\t!=\t\t\t");
+        DEBUG_FOR_LAB4("NEQ", "!=");
     #else
         return NEQ;
     #endif
 }
 "+=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("PLUSASSIGN\t+=\t\t\t");
+        DEBUG_FOR_LAB4("PLUSASSIGN", "+=");
     #else
         return PLUSASSIGN;
     #endif
 }
 "-=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MINUASSIGN\t-=\t\t\t");
+        DEBUG_FOR_LAB4("MINUASSIGN", "-=");
     #else
         return MINUASSIGN;
     #endif
 }
 "*=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MULASSIGN\t*=\t\t\t");
+        DEBUG_FOR_LAB4("MULASSIGN", "*=");
     #else 
         return MULASSIGN;
     #endif
 }
 "/=" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("DIVASSIGN\t/=\t\t\t");
+        DEBUG_FOR_LAB4("DIVASSIGN", "/=");
     #else
         return DIVASSIGN;
     #endif
@@ -246,7 +256,7 @@ commentlineend \n
 
 "<" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LES\t\t\t<\t\t\t");
+        DEBUG_FOR_LAB4("LES", "<");
     #else
         return LES;
     #endif
@@ -254,7 +264,7 @@ commentlineend \n
 
 ">" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("g=GRA\t\t\t>\t\t\t");
+        DEBUG_FOR_LAB4("GRA", ">");
     #else
         return GRA;
     #endif
@@ -262,28 +272,28 @@ commentlineend \n
 
 "+" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("ADD\t\t\t+\t\t\t");
+        DEBUG_FOR_LAB4("ADD", "+");
     #else
         return ADD;
     #endif
 }
 "-" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MINUS\t\t\t-\t\t\t");
+        DEBUG_FOR_LAB4("MINUS", "-");
     #else
         return MINUS;
     #endif
 }
 "*" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("MUL\t\t\t*\t\t\t");
+        DEBUG_FOR_LAB4("MUL", "*");
     #else
         return MUL;
     #endif
 }
 "/" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("DIV\t\t\t/\t\t\t");
+        DEBUG_FOR_LAB4("DIV", "/");
     #else
         return DIV;
     #endif
@@ -291,21 +301,21 @@ commentlineend \n
 
 "&&" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("AND\t\t\t&&\t\t\t");
+        DEBUG_FOR_LAB4("AND", "&&");
     #else
         return AND;
     #endif
 }
 "||" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("OR\t\t\t||\t\t\t");
+        DEBUG_FOR_LAB4("OR", "||");
     #else
         return OR;
     #endif
 }
 "!" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("NOT\t\t\t!\t\t\t");
+        DEBUG_FOR_LAB4("NOT", "!");
     #else
         return NOT;
     #endif
@@ -313,49 +323,52 @@ commentlineend \n
 
 ";" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("SEMICOLON\t;\t\t\t");
+        DEBUG_FOR_LAB4("SEMICOLON", ";");
     #else
         return SEMICOLON;
     #endif
 }
 "(" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LPAREN\t\t(\t\t\t");
+        DEBUG_FOR_LAB4("LPAREN", "(");
     #else
         return LPAREN;
     #endif
 }
 ")" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("RPAREN\t\t)\t\t\t");
+        DEBUG_FOR_LAB4("RPAREN", ")");
     #else
     return RPAREN;
     #endif
 }
 "{" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LBRACE\t\t{\t\t\t");
+        DEBUG_FOR_LAB4("LBRACE", "{");
+        base++;
+        scope[base] = yytext;
     #else
         return LBRACE;
     #endif
 }
 "}" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("RBRACE\t\t}\t\t\t");
+        DEBUG_FOR_LAB4("RBRACE", "}");
+        base--;
     #else
         return RBRACE;
     #endif
 }
 "[" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("LSQUARE\t\t[\t\t\t");
+        DEBUG_FOR_LAB4("LSQUARE", "[");
     #else
         return LSQUARE;
     #endif
 }
 "]" {
     #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("RSQUARE\t\t]\t\t\t");
+        DEBUG_FOR_LAB4("RSQUARE", "]");
     #else
         return RSQUARE;
     #endif
@@ -363,18 +376,18 @@ commentlineend \n
 
 {DEC} {
     #ifdef ONLY_FOR_LEX
-        // string s = "DEC\t\t\t";
-        // s.append(yytext);
-        // s.append("\t\t\t");
-        // DEBUG_FOR_LAB4(s);
+        if(tmplineno != yylineno) {
+            offset = base;
+        }
         int t = atoi(yytext);
         float f = atof(yytext);
         if((t - f) != 0) {
-            fprintf(yyout, "%-12s%-12f%-12d\n", "DEC", f, yylineno);
+            fprintf(yyout, "%-12s%-12f%-12d%-12d\n", "DEC", f, yylineno, offset);
         }
         else {
-            fprintf(yyout, "%-12s%-12d%-12d\n", "DEC", t, yylineno);
+            fprintf(yyout, "%-12s%-12d%-12d%-12d\n", "DEC", t, yylineno, offset);
         }
+        offset += strlen(yytext);
     #else
         return DEC;
     #endif
@@ -382,11 +395,13 @@ commentlineend \n
 
 {HEX} {
     #ifdef ONLY_FOR_LEX
+        if(tmplineno != yylineno) {
+            offset = base;
+        }
         char *endptr = NULL;
         int t = strtol(yytext, &endptr, 16);
-        // sprintf(yytext, "HEX\t\t\t%d\t\t\t", t);
-        // DEBUG_FOR_LAB4(yytext);
-        fprintf(yyout, "%-12s%-12d%-12d\n", "HEX", t, yylineno);
+        fprintf(yyout, "%-12s%-12d%-12d%-12d\n", "HEX", t, yylineno, offset);
+        offset += strlen(yytext);
     #else
         return HEX;
     #endif
@@ -394,11 +409,13 @@ commentlineend \n
 
 {OCT} {
     #ifdef ONLY_FOR_LEX
+        if(tmplineno != yylineno) {
+            offset = base;
+        }
         char *endptr = NULL;
         int t = strtol(yytext, &endptr, 8);
-        // sprintf(yytext, "OCT\t\t\t%d\t\t\t", t);
-        // DEBUG_FOR_LAB4(yytext);
-        fprintf(yyout, "%-12s%-12d%-12d\n", "OCT", t, yylineno);
+        fprintf(yyout, "%-12s%-12d%-12d%-12d\n", "OCT", t, yylineno, offset);
+        offset += strlen(yytext);
     #else
         return OCT;
     #endif
@@ -420,18 +437,14 @@ commentlineend \n
 	    	strcpy(id_list[id], yytext);
 	    	id_num++;
 	    }
-        // string s = "ID\t\t\t";
-        // s.append(yytext);
-        // s.append("\t\t\t");
-        // DEBUG_FOR_LAB4(s); 
-        fprintf(yyout, "%-12s%-12s%-12d\n", "ID", yytext, yylineno);
+        DEBUG_FOR_LAB4("ID", yytext);
     #else
         return ID;
     #endif
 }
 
 {EOL} yylineno++;
-{WHITE}
+{WHITE} offset++;
 
 {commentbegin} {BEGIN COMMENT;}
 <COMMENT>{commentelement} {if(!strcmp(yytext, "\n")) yylineno++;}
@@ -459,7 +472,7 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     }
 
-    std::string title="token\t\tlexeme\t\tlineno\n";
+    std::string title="token\t\tlexeme\t\tlineno\t\toffset\t\tpointer_to_scope\n";
     fputs(title.c_str(), yyout);
     yylex();
     return 0;
