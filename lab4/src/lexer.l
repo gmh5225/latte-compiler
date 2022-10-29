@@ -16,6 +16,7 @@
     #include <string>
     #include <math.h>
     #include <vector>
+    #include<stdbool.h>
 
     #ifdef ONLY_FOR_LEX
     #include <ostream>
@@ -423,20 +424,6 @@ commentlineend \n
 
 {ID} {
     #ifdef ONLY_FOR_LEX
-	    int id_match = 0;
-	    int id = 0;
-	    for (int i = 0; i < id_num; i++) {
-		    if (strcmp(yytext, id_list[i])==0) {
-			    id_match = 1;
-	    		id = i;
-		    	break;
-		    }
-	    }
-	    if (!id_match) {
-	    	id = id_num;
-	    	strcpy(id_list[id], yytext);
-	    	id_num++;
-	    }
         DEBUG_FOR_LAB4("ID", yytext);
     #else
         return ID;
