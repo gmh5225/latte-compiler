@@ -1,0 +1,88 @@
+token		lexeme		lineno		offset		pointer_to_scope
+INT         int         3           0           
+ID          f           3           4           0x7fffccd2636f
+LPAREN      (           3           5           
+RPAREN      )           3           6           
+LBRACE      {           3           7           
+INT         int         4           1           
+ID          a           4           5           0x7fffccd26372
+SEMICOLON   ;           4           6           
+ID          a           5           1           0x7fffccd26372
+ASSIGN      =           5           3           
+DEC         0           5           5           
+SEMICOLON   ;           5           6           
+FLOAT       float       6           1           
+ID          x           6           7           0x7fffccd26372
+ASSIGN      =           6           9           
+DEC         0.123000    6           11          
+SEMICOLON   ;           6           16          
+WHILE       while       7           1           
+LPAREN      (           7           6           
+ID          a           7           7           0x7fffccd26372
+LES         <           7           8           
+OCT         8           7           9           
+RPAREN      )           7           12          
+LBRACE      {           7           13          
+ID          a           8           2           0x7fffccd263a3
+ASSIGN      =           8           4           
+ID          a           8           6           0x7fffccd263a3
+MUL         *           8           8           
+HEX         9029        8           10          
+SEMICOLON   ;           8           16          
+RBRACE      }           9           2           
+RETURN      return      10          1           
+ID          a           10          8           0x7fffccd26372
+SEMICOLON   ;           10          9           
+RBRACE      }           11          1           
+INT         int         13          0           
+ID          main        13          4           0x7fffccd263cc
+LPAREN      (           13          8           
+RPAREN      )           13          9           
+LBRACE      {           13          10          
+INT         int         14          1           
+ID          _testid     14          5           0x7fffccd263d2
+SEMICOLON   ;           14          12          
+ID          _testid     15          1           0x7fffccd263d2
+ASSIGN      =           15          9           
+DEC         0           15          11          
+SEMICOLON   ;           15          12          
+IF          if          16          1           
+LPAREN      (           16          3           
+ID          _testid     16          4           0x7fffccd263d2
+EQ          ==          16          11          
+DEC         0           16          13          
+RPAREN      )           16          14          
+LBRACE      {           16          15          
+INT         int         17          2           
+ID          _testid     17          6           0x7fffccd263ff
+SEMICOLON   ;           17          13          
+INT         int         18          2           
+ID          _testid2    18          6           0x7fffccd263ff
+SEMICOLON   ;           18          14          
+ID          _testid1    19          2           0x7fffccd263ff
+ASSIGN      =           19          10          
+ID          _testid1    19          11          0x7fffccd263ff
+ADD         +           19          19          
+DEC         1           19          20          
+SEMICOLON   ;           19          21          
+RBRACE      }           20          2           
+LBRACE      {           24          1           
+INT         int         25          2           
+ID          a           25          6           0x7fffccd26454
+SEMICOLON   ;           25          7           
+RBRACE      }           26          2           
+LBRACE      {           27          1           
+INT         int         28          2           
+ID          a           28          6           0x7fffccd26463
+SEMICOLON   ;           28          7           
+RBRACE      }           29          2           
+INT         int         30          1           
+ID          b           30          5           0x7fffccd263d2
+LSQUARE     [           30          6           
+DEC         3           30          7           
+RSQUARE     ]           30          8           
+SEMICOLON   ;           30          9           
+RETURN      return      31          1           
+DEC         0           31          8           
+SEMICOLON   ;           31          9           
+RBRACE      }           32          1           

@@ -16,7 +16,8 @@
     #include <string>
     #include <math.h>
     #include <vector>
-    #include<stdbool.h>
+    #include <stdbool.h>
+    #include <map>
 
     #ifdef ONLY_FOR_LEX
     #include <ostream>
@@ -28,10 +29,8 @@
     int base = 0;
     int offset = 0;
     int tmplineno = 0;
-	int id_num = 0;
-	char id_list[100][20];
     char *scope[100];
-
+    
     void DEBUG_FOR_LAB4(string tok, string val){
         if(tmplineno != yylineno) {
             tmplineno = yylineno;
@@ -380,12 +379,19 @@ commentlineend \n
         if(tmplineno != yylineno) {
             offset = base;
         }
-        int t = atoi(yytext);
-        float f = atof(yytext);
-        if((t - f) != 0) {
+        _Bool isFloat = false;
+        for(long unsigned int i = 0; i < strlen(yytext); i++) {
+            if(yytext[i] == '.') {
+                isFloat = true;
+                break;
+            }
+        }
+        if(isFloat) {
+            float f = atof(yytext);
             fprintf(yyout, "%-12s%-12f%-12d%-12d\n", "DEC", f, yylineno, offset);
         }
         else {
+            int t = atoi(yytext);
             fprintf(yyout, "%-12s%-12d%-12d%-12d\n", "DEC", t, yylineno, offset);
         }
         offset += strlen(yytext);
@@ -423,8 +429,8 @@ commentlineend \n
 }
 
 {ID} {
-    #ifdef ONLY_FOR_LEX
-        DEBUG_FOR_LAB4("ID", yytext);
+    #ifdef ONLY_FOR_LEX 
+        DEBUG_FOR_LAB4("ID",yytext);
     #else
         return ID;
     #endif
