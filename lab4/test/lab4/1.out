@@ -1,0 +1,31 @@
+token		lexeme		lineno		offset		pointer_to_scope
+INT         int         1           0           
+ID          a           1           4           0x557c789b6334
+SEMICOLON   ;           1           5           
+INT         int         3           0           
+ID          main        3           4           0x557c789b633c
+LPAREN      (           3           8           
+RPAREN      )           3           9           
+LBRACE      {           4           0           
+INT         int         5           1           
+ID          a           5           5           0x557c789b6343
+SEMICOLON   ;           5           6           
+ID          a           6           1           0x557c789b6343
+ASSIGN      =           6           3           
+DEC         1           6           5           
+ADD         +           6           7           
+DEC         2           6           9           
+SEMICOLON   ;           6           10          
+IF          if          7           1           
+LPAREN      (           7           3           
+ID          a           7           4           0x557c789b6343
+LES         <           7           6           
+DEC         5           7           8           
+RPAREN      )           7           9           
+RETURN      return      8           1           
+DEC         1           8           8           
+SEMICOLON   ;           8           9           
+RETURN      return      9           1           
+DEC         0           9           8           
+SEMICOLON   ;           9           9           
+RBRACE      }           10          1           

@@ -69,7 +69,15 @@ SymbolTable::SymbolTable(SymbolTable *prev)
 */
 SymbolEntry* SymbolTable::lookup(std::string name)
 {
-    // Todo
+    SymbolTable* temp = this;
+    while (temp != nullptr) {
+        if (temp->symbolTable.find(name) != temp->symbolTable.end()) {
+            return temp->symbolTable[name];
+        } 
+        else {
+            temp = temp->prev;
+        }
+    }
     return nullptr;
 }
 
