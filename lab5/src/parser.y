@@ -23,12 +23,14 @@
 
 %start Program
 %token <strtype> ID 
-%token <itype> INTEGER
+%token <itype> INTEGER FLOATNUM
 %token IF ELSE
-%token INT VOID
-%token LPAREN RPAREN LBRACE RBRACE SEMICOLON
-%token ADD SUB OR AND LESS ASSIGN
-%token RETURN
+%token INT VOID FLOAT
+%token LPAREN RPAREN LBRACE RBRACE SEMICOLON LSQUARE RSQUARE
+%token ADD SUB MUL DIV OR AND NOT MINUS
+%token EQ GEQ LEQ NEQ GRA LES
+%token ASSIGN PLUSASSIGN MINUASSIGN MULASSIGN DIVASSIGN
+%token CONST WHILE BREAK CONTINUE RETURN
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp
@@ -139,10 +141,10 @@ RelExp
     :
     AddExp {$$ = $1;}
     |
-    RelExp LESS AddExp
+    RelExp LES AddExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::LESS, $1, $3);
+        $$ = new BinaryExpr(se, BinaryExpr::LES, $1, $3);
     }
     ;
 LAndExp

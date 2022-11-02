@@ -35,8 +35,8 @@ void BinaryExpr::output(int level)
         case OR:
             op_str = "or";
             break;
-        case LESS:
-            op_str = "less";
+        case LES:
+            op_str = "les";
             break;
     }
     fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
