@@ -216,6 +216,11 @@ commentlineend \n
     return DIV;
     
 }
+"%" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("MOD", "%");
+    return MOD;
+}
 "&&" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("AND", "&&");

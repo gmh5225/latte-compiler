@@ -30,7 +30,7 @@ private:
     int op;
     ExprNode *expr1, *expr2;
 public:
-    enum {ADD, SUB, AND, OR, LES};
+    enum {ADD, SUB, MUL, DIV, MOD, AND, OR, NOT, MINUS, EQ, GEQ, LEQ, NEQ, GRA, LES};
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
     void output(int level);
 };
@@ -97,6 +97,31 @@ private:
     StmtNode *elseStmt;
 public:
     IfElseStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elseStmt) : cond(cond), thenStmt(thenStmt), elseStmt(elseStmt) {};
+    void output(int level);
+};
+
+class WhileStmt : public StmtNode {
+private:
+    ExprNode *cond;
+    StmtNode *stmt;
+public:
+    WhileStmt(ExprNode* cond, StmtNode* stmt=nullptr) : cond(cond), stmt(stmt) {};
+    void output(int level);
+};
+
+class BreakStmt : public StmtNode {
+    private:
+    StmtNode * whileStmt;
+   public:
+    BreakStmt(StmtNode* whileStmt){this->whileStmt=whileStmt;};
+    void output(int level);
+};
+
+class ContinueStmt : public StmtNode {
+private:
+    StmtNode *whileStmt;
+public:
+    ContinueStmt(StmtNode* whileStmt){this->whileStmt=whileStmt;};
     void output(int level);
 };
 

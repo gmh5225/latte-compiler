@@ -2,6 +2,7 @@
 #include "SymbolTable.h"
 #include <string>
 #include "Type.h"
+#include <stdbool.h>
 
 extern FILE *yyout;
 int Node::counter = 0;
@@ -24,19 +25,49 @@ void BinaryExpr::output(int level)
     switch(op)
     {
         case ADD:
-            op_str = "add";
+            op_str = "+";
             break;
         case SUB:
-            op_str = "sub";
+            op_str = "-";
+            break;
+        case MUL:
+            op_str = "*";
+            break;
+        case DIV:
+            op_str = "/";
+            break;
+        case MOD:
+            op_str = "%";
             break;
         case AND:
-            op_str = "and";
+            op_str = "&&";
             break;
         case OR:
-            op_str = "or";
+            op_str = "||";
+            break;
+        case NOT:
+            op_str = "!";
+            break;
+        case MINUS:
+            op_str = "-";
+            break;
+        case EQ:
+            op_str = "==";
+            break;
+        case GEQ:
+            op_str = ">=";
+            break;
+        case LEQ:
+            op_str = "<=";
+            break;
+        case NEQ:
+            op_str = "!=";
+            break;
+        case GRA:
+            op_str = ">";
             break;
         case LES:
-            op_str = "les";
+            op_str = "<";
             break;
     }
     fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
@@ -49,8 +80,21 @@ void Constant::output(int level)
     std::string type, value;
     type = symbolEntry->getType()->toStr();
     value = symbolEntry->toStr();
-    fprintf(yyout, "%*cIntegerLiteral\tvalue: %s\ttype: %s\n", level, ' ',
+    _Bool isFloat = false;
+    for(long unsigned int i = 0; i < value.length(); i++) {
+        if(value[i] == '.') {
+            isFloat = true;
+            break;
+        }
+    }
+    if(isFloat) {
+        fprintf(yyout, "%*cFloatLiteral\tvalue: %s\ttype: %s\n", level, ' ',
             value.c_str(), type.c_str());
+    }
+    else {
+        fprintf(yyout, "%*cIntegerLiteral\tvalue: %s\ttype: %s\n", level, ' ',
+            value.c_str(), type.c_str());
+    }
 }
 
 void Id::output(int level)
@@ -96,6 +140,19 @@ void IfElseStmt::output(int level)
     cond->output(level + 4);
     thenStmt->output(level + 4);
     elseStmt->output(level + 4);
+}
+
+void WhileStmt::output(int level) {
+    fprintf(yyout, "%*cWhileStmt\n", level, ' ');
+    cond->output(level + 4);
+    stmt->output(level + 4);
+}
+void BreakStmt::output(int level) {
+    fprintf(yyout, "%*cBreakStmt\n", level, ' ');
+}
+
+void ContinueStmt::output(int level) {
+    fprintf(yyout, "%*cContinueStmt\n", level, ' ');
 }
 
 void ReturnStmt::output(int level)
