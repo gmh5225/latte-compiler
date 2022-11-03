@@ -1,10 +1,12 @@
 %code top{
     #include <iostream>
     #include <assert.h>
+    #include <stack>
     #include "parser.h"
     extern Ast ast;
     int yylex();
     int yyerror( char const * );
+
     #include<iostream>
 }
 
@@ -35,7 +37,7 @@
 %token CONST WHILE BREAK CONTINUE RETURN
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef 
-%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp
+%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp
 %nterm <type> Type
 
 %precedence THEN
@@ -116,6 +118,10 @@ Cond
     ;
 PrimaryExp
     :
+    LPAREN Exp RPAREN{
+        $$ = $2;
+    }
+    |
     LVal {
         $$ = $1;
     }
@@ -124,6 +130,7 @@ PrimaryExp
         $$ = new Constant(se);
     }
     ;
+
 AddExp
     :
     PrimaryExp {$$ = $1;}
@@ -144,19 +151,19 @@ MulExp
     :
     AddExp {$$ = $1;}
     |
-    MulExp MUL PrimaryExp
+    MulExp MUL AddExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType,SymbolTable::getLabel());
         $$ = new BinaryExpr(se,BinaryExpr::MUL,$1,$3);
     }
     |
-    MulExp DIV PrimaryExp
+    MulExp DIV AddExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType,SymbolTable::getLabel());
         $$ = new BinaryExpr(se,BinaryExpr::DIV,$1,$3);
     }
     |
-    MulExp MOD PrimaryExp
+    MulExp MOD AddExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::inttype,SymbolTable::getLabel());
         $$ = new BinaryExpr(se,BinaryExpr::MOD,$1,$3);
