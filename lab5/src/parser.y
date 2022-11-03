@@ -37,8 +37,8 @@
 %token ASSIGN PLUSASSIGN MINUASSIGN MULASSIGN DIVASSIGN
 %token CONST WHILE BREAK CONTINUE RETURN
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef FuncParam FuncParams
-%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef FuncParam FuncParams ConstDef ConstDeclStmt ConstDefList
+%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp ConstInitVal
 %nterm <type> Type
 
 %precedence THEN
@@ -247,12 +247,32 @@ LOrExp
         $$ = new BinaryExpr(se, BinaryExpr::OR, $1, $3);
     }
     ;
-/*
+
 ConstExp
     :
     AddExp {$$ = $1;}
     ;
-*/
+
+ConstInitVal
+    :
+    ConstExp{$$=$1;}
+    ;
+
+ConstDef
+    :
+    ID ASSIGN ConstInitVal
+    {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry(TypeSystem::constIntType,$1,identifiers->getLevel());
+        ((IdentifierSymbolEntry*)se)->setConst();
+        identifiers->install($1,se);
+
+        ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
+        $$ = new DeclStmt(new ID(se),$3);
+        delete []$1;
+    }
+    ;
+
 Type
     : INT {
         $$ = TypeSystem::intType;
@@ -270,6 +290,25 @@ DeclStmt
         $$ = new DeclStmt(new Id(se));
         delete []$2;
     }
+    |
+    ConstDeclStmt {$$ =$1;}
+    ;
+
+ConstDeclStmt
+    :
+    CONST Type ConstDefList SEMICOLON
+    {
+        $$ = $3;
+    }
+    ;
+ConstDefList
+    :
+    ConstDefList COMMA ConstDef{
+        $$ = $1;
+        $1->setNext($3);
+    }
+    |
+    ConstDef{$$ = $1;}
     ;
 FuncDef
     :
