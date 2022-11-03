@@ -43,6 +43,7 @@ public:
     virtual ~ConstantSymbolEntry() {};
     int getValue() const {return value;};
     std::string toStr();
+    int getValue();
     // You can add any function you need here.
 };
 
@@ -75,8 +76,10 @@ private:
     enum {GLOBAL, PARAM, LOCAL};
     std::string name;
     int scope;
+    int value;
     int paramNo;
     bool sysy;
+    bool constant;
     // You can add any field you need here.
 
 public:
@@ -84,6 +87,10 @@ public:
     virtual ~IdentifierSymbolEntry() {};
     std::string toStr();
     int getScope() const {return scope;};
+    void setConst() {constant = true;};
+    bool getConst() const {return constant;};
+    void setValue(int value);
+    int getValue() const {return value;};
     // You can add any function you need here.
 };
 

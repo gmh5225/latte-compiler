@@ -2,6 +2,7 @@
     #include <iostream>
     #include <assert.h>
     #include <stack>
+    #include <cstring>
     #include "parser.h"
     extern Ast ast;
     int yylex();

@@ -26,6 +26,7 @@ protected:
 public:
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
     SymbolEntry* getSymbolEntry() {return symbolEntry;};
+    virtual int getValue() {return -1;};
 };
 
 class BinaryExpr : public ExprNode
@@ -37,6 +38,7 @@ public:
     enum {ADD, SUB, MUL, DIV, MOD, AND, OR, NOT, MINUS, EQ, GEQ, LEQ, NEQ, GRA, LES};
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
     void output(int level);
+    int getValue();
 };
 
 class UnaryExpr : public ExprNode
@@ -48,6 +50,7 @@ public:
     enum {NOT, SUB};
     UnaryExpr(SymbolEntry *se, int op, ExprNode*expr) : ExprNode(se), op(op), expr(expr){};
     void output(int level);
+    int getValue();
 };
 
 class Constant : public ExprNode
@@ -55,6 +58,7 @@ class Constant : public ExprNode
 public:
     Constant(SymbolEntry *se) : ExprNode(se){};
     void output(int level);
+    int getValue();
 };
 
 class Id : public ExprNode
@@ -62,6 +66,7 @@ class Id : public ExprNode
 public:
     Id(SymbolEntry *se) : ExprNode(se){};
     void output(int level);
+    int getValue();
 };
 
 class ConstId : public ExprNode

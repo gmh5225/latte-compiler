@@ -2,6 +2,7 @@
 #define __TYPE_H__
 #include <vector>
 #include <string>
+#include "Ast.h"
 
 class Type
 {
@@ -23,10 +24,13 @@ class IntType : public Type
 {
 private:
     int size;
+    bool constant;
 public:
-    IntType(int size) : Type(Type::INT), size(size){};
+    IntType(int size,bool constant = false) : Type(Type::INT), size(size),constant(constant){};
     std::string toStr();
+    bool isConst() const {return constant;};
 };
+
 
 class VoidType : public Type
 {
@@ -53,10 +57,12 @@ private:
     static IntType commonInt;
     static VoidType commonVoid;
     static IntType commonBool;
+    static IntType commonConstInt;
 public:
     static Type *intType;
     static Type *voidType;
     static Type *boolType;
+    static Type* constIntType;
 };
 
 #endif
