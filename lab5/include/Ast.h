@@ -35,6 +35,17 @@ public:
     void output(int level);
 };
 
+class UnaryExpr : public ExprNode
+{
+private:
+    int op;
+    ExprNode *expr;
+public:
+    enum {NOT, SUB};
+    UnaryExpr(SymbolEntry *se, int op, ExprNode*expr) : ExprNode(se), op(op), expr(expr){};
+    void output(int level);
+};
+
 class Constant : public ExprNode
 {
 public:
@@ -46,6 +57,20 @@ class Id : public ExprNode
 {
 public:
     Id(SymbolEntry *se) : ExprNode(se){};
+    void output(int level);
+};
+
+class ConstId : public ExprNode
+{
+public:
+    ConstId(SymbolEntry *se) : ExprNode(se){};
+    void output(int level);
+};
+
+class FuncParam : public ExprNode
+{
+public:
+    FuncParam(SymbolEntry *se) : ExprNode(se){};
     void output(int level);
 };
 

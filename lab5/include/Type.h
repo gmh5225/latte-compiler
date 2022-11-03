@@ -8,13 +8,14 @@ class Type
 private:
     int kind;
 protected:
-    enum {INT, VOID, FUNC};
+    enum {INT, VOID, BOOL, FUNC};
 public:
     Type(int kind) : kind(kind) {};
     virtual ~Type() {};
     virtual std::string toStr() = 0;
     bool isInt() const {return kind == INT;};
     bool isVoid() const {return kind == VOID;};
+    bool isBool() const {return kind == BOOL;};
     bool isFunc() const {return kind == FUNC;};
 };
 
@@ -50,9 +51,11 @@ class TypeSystem
 private:
     static IntType commonInt;
     static VoidType commonVoid;
+    static IntType commonBool;
 public:
     static Type *intType;
     static Type *voidType;
+    static Type *boolType;
 };
 
 #endif

@@ -36,8 +36,8 @@
 %token ASSIGN PLUSASSIGN MINUASSIGN MULASSIGN DIVASSIGN
 %token CONST WHILE BREAK CONTINUE RETURN
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef 
-%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef
+%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp
 %nterm <type> Type
 
 %precedence THEN
@@ -131,42 +131,57 @@ PrimaryExp
     }
     ;
 
-AddExp
-    :
-    PrimaryExp {$$ = $1;}
-    |
-    AddExp ADD PrimaryExp
-    {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
+UnaryExp 
+    : PrimaryExp {$$ = $1;}
+    
+    | ADD UnaryExp {$$ = $2;}
+    
+    | SUB UnaryExp {
+        SymbolEntry* se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new UnaryExpr(se, UnaryExpr::SUB, $2);
     }
-    |
-    AddExp SUB PrimaryExp
-    {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+    //注意NOT是Bool类型
+    | NOT UnaryExp {
+        SymbolEntry* se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        $$ = new UnaryExpr(se, UnaryExpr::NOT, $2);
     }
     ;
 MulExp
     :
-    AddExp {$$ = $1;}
+    UnaryExp {$$ = $1;}
     |
-    MulExp MUL AddExp
+    MulExp MUL UnaryExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType,SymbolTable::getLabel());
         $$ = new BinaryExpr(se,BinaryExpr::MUL,$1,$3);
     }
     |
-    MulExp DIV AddExp
+    MulExp DIV UnaryExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType,SymbolTable::getLabel());
         $$ = new BinaryExpr(se,BinaryExpr::DIV,$1,$3);
     }
     |
-    MulExp MOD AddExp
+    MulExp MOD UnaryExp
     {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::inttype,SymbolTable::getLabel());
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType,SymbolTable::getLabel());
         $$ = new BinaryExpr(se,BinaryExpr::MOD,$1,$3);
+    }
+    ;
+AddExp
+    :
+    MulExp {$$ = $1;}
+    |
+    AddExp ADD MulExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
+    }
+    |
+    AddExp SUB MulExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
     }
     ;
 RelExp  //大于小于
@@ -203,18 +218,19 @@ EqExp   //相等不相等
     |
     EqExp EQ RelExp {
         SymbolEntry* se = new TemporarySymbolEntry(TypeSystem::intType,SymbolTable::getLabel());
-        $$ = new BinaryExpr(se,BinaryExpr::EQ,$1,$3)
+        $$ = new BinaryExpr(se,BinaryExpr::EQ,$1,$3);
     }
     |
     EqExp NEQ RelExp{
         SymbolEntry* se = new TemporarySymbolEntry(TypeSystem::intType,SymbolTable::getLabel());
-        $$ = new BinaryExpr(se,BinaryExpr::NEQ,$1,$3)
+        $$ = new BinaryExpr(se,BinaryExpr::NEQ,$1,$3);
     }
+    ;
 LAndExp  
     :
-    RelExp {$$ = $1;}
+    EqExp {$$ = $1;}
     |
-    LAndExp AND RelExp
+    LAndExp AND EqExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::AND, $1, $3);
@@ -230,10 +246,12 @@ LOrExp
         $$ = new BinaryExpr(se, BinaryExpr::OR, $1, $3);
     }
     ;
+/*
 ConstExp
     :
     AddExp {$$ = $1;}
     ;
+*/
 Type
     : INT {
         $$ = TypeSystem::intType;
@@ -274,6 +292,8 @@ FuncDef
         delete []$2;
     }
     ;
+
+
 %%
 
 int yyerror(char const* message)
