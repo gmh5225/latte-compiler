@@ -67,6 +67,9 @@ LPAREN "("
 RPAREN ")"
 LBRACE "{"
 RBRACE "}"
+LSQUARE "["
+RSQUARE "]"
+COMMA ","
 SEMICOLON ";"
 
     // 注释
@@ -239,6 +242,11 @@ commentlineend \n
     return NOT;
     
 }
+"," {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("COMMA", ",");
+    return COMMA;
+}
 ";" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("SEMICOLON", ";");
@@ -268,7 +276,6 @@ commentlineend \n
     if(dump_tokens)
         DEBUG_FOR_LAB4("LSQUARE", "[");
     return LSQUARE;
-    
 }
 "]" {
     if(dump_tokens)
@@ -311,6 +318,24 @@ commentlineend \n
     char *endptr = NULL;
     yylval.itype = strtol(yytext, &endptr, 8);
     return INTEGER;
+}
+
+"getint" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("ID", yytext);
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    std::vector<Type*> vecType;
+    std::vector<SymbolEntry*> vecSe;
+    Type* funcType = new FunctionType(TypeSystem::intType, vecType, vecSe);
+    SymbolTable* st = identifiers;
+    while(st->getPrev())
+        st = st->getPrev();
+    SymbolEntry* se = new IdentifierSymbolEntry(funcType, yytext, st->getLevel(), -1, true);
+    st->install(yytext, se);
+    return ID;
 }
 
 {ID} {

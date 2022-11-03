@@ -6,6 +6,7 @@
     extern Ast ast;
     int yylex();
     int yyerror( char const * );
+    int paramNo = 0;
 
     #include<iostream>
 }
@@ -30,13 +31,13 @@
 %token <itype> INTEGER FLOATNUM
 %token IF ELSE
 %token INT VOID FLOAT
-%token LPAREN RPAREN LBRACE RBRACE SEMICOLON LSQUARE RSQUARE
+%token LPAREN RPAREN LBRACE RBRACE SEMICOLON LSQUARE RSQUARE COMMA
 %token ADD SUB MUL DIV OR AND NOT MINUS MOD
 %token EQ GEQ LEQ NEQ GRA LES
 %token ASSIGN PLUSASSIGN MINUASSIGN MULASSIGN DIVASSIGN
 %token CONST WHILE BREAK CONTINUE RETURN
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef FuncParam FuncParams
 %nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp
 %nterm <type> Type
 
@@ -273,26 +274,52 @@ DeclStmt
 FuncDef
     :
     Type ID {
-        Type *funcType;
-        funcType = new FunctionType($1,{});
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
         identifiers = new SymbolTable(identifiers);
+        paramNo = 0;    //标记参数的id
     }
-    LPAREN RPAREN
-    BlockStmt
-    {
-        SymbolEntry *se;
-        se = identifiers->lookup($2);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, $6);
-        SymbolTable *top = identifiers;
+    LPAREN FuncParams RPAREN {
+        Type* funcType;
+        std::vector<Type*> vecType;
+        std::vector<SymbolEntry*> vecSe;
+        DeclStmt* temp = (DeclStmt*)$5;
+        while(temp){
+            vecType.push_back(temp->getId()->getSymbolEntry()->getType());
+            vecSe.push_back(temp->getId()->getSymbolEntry());
+            temp = (DeclStmt*)(temp->getNext());
+        }
+        //输入参数类型和符号表项
+        funcType = new FunctionType($1, vecType, vecSe);
+        SymbolEntry* se = new IdentifierSymbolEntry(funcType, $2, identifiers->getPrev()->getLevel());
+        identifiers->getPrev()->install($2, se);
+        $<se>$ = se; //下面使用
+    }
+    BlockStmt {
+        $$ = new FunctionDef($<se>7, (DeclStmt*)$5, $8);
+        SymbolTable* top = identifiers;
         identifiers = identifiers->getPrev();
         delete top;
         delete []$2;
     }
     ;
-
+FuncParams
+    : FuncParams COMMA FuncParam {
+        $$ = $1;
+        $$->setNext($3);    //连接参数
+    }
+    | FuncParam {
+        $$ = $1;
+    }
+    ;
+FuncParam
+    : Type ID {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel(), paramNo++);
+        identifiers->install($2, se);
+        $$ = new DeclStmt(new Id(se));
+        delete []$2;
+    }
+    | %empty {$$ = nullptr;}
+    ;
 
 %%
 

@@ -10,10 +10,13 @@ class Node
 private:
     static int counter;
     int seq;
+    Node* next;
 public:
     Node();
     int getSeq() const {return seq;};
     virtual void output(int level) = 0;
+    void setNext(Node* node);
+    Node* getNext() {return next;}
 };
 
 class ExprNode : public Node
@@ -22,6 +25,7 @@ protected:
     SymbolEntry *symbolEntry;
 public:
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
+    SymbolEntry* getSymbolEntry() {return symbolEntry;};
 };
 
 class BinaryExpr : public ExprNode
@@ -102,6 +106,7 @@ private:
 public:
     DeclStmt(Id *id) : id(id){};
     void output(int level);
+    Id* getId() {return id;};
 };
 
 class IfStmt : public StmtNode
@@ -173,9 +178,10 @@ class FunctionDef : public StmtNode
 {
 private:
     SymbolEntry *se;
+    DeclStmt *decl;
     StmtNode *stmt;
 public:
-    FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
+    FunctionDef(SymbolEntry *se, DeclStmt *decl, StmtNode *stmt) : se(se), decl(decl), stmt(stmt){};
     void output(int level);
 };
 
