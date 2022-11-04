@@ -242,6 +242,11 @@ void DeclStmt::output(int level)
 {
     fprintf(yyout, "%*cDeclStmt\n", level, ' ');
     id->output(level + 4);
+    if (expr)
+        expr->output(level + 4);
+    if (this->getNext()) {
+        this->getNext()->output(level);
+    }
 }
 
 void IfStmt::output(int level)

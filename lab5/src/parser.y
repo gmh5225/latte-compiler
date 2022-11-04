@@ -38,8 +38,8 @@
 %token ASSIGN PLUSASSIGN MINUASSIGN MULASSIGN DIVASSIGN
 %token CONST WHILE BREAK CONTINUE RETURN
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef FuncParam FuncParams ConstDef ConstDeclStmt ConstDefList
-%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp ConstInitVal
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef FuncParam FuncParams ConstDef ConstDeclStmt ConstDefList VarDeclStmt VarDef VarDefList
+%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp ConstInitVal InitVal
 %nterm <type> Type
 
 %precedence THEN
@@ -248,27 +248,14 @@ ConstExp
     :
     AddExp {$$ = $1;}
     ;
-
+InitVal 
+    : 
+    Exp {$$ = $1;}
+    ;
 ConstInitVal
     :
     ConstExp{$$=$1;}
     ;
-
-ConstDef
-    :
-    ID ASSIGN ConstInitVal
-    {
-        SymbolEntry* se;
-        se = new IdentifierSymbolEntry(TypeSystem::constIntType,$1,identifiers->getLevel());
-        ((IdentifierSymbolEntry*)se)->setConst();
-        identifiers->install($1,se);
-
-        ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
-        $$ = new DeclStmt(new Id(se),$3);
-        delete []$1;
-    }
-    ;
-
 Type
     : INT {
         $$ = TypeSystem::intType;
@@ -279,23 +266,25 @@ Type
     ;
 DeclStmt
     :
-    Type ID SEMICOLON {
-        SymbolEntry *se;
-        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        $$ = new DeclStmt(new Id(se));
-        delete []$2;
-    }
-    |
-    ConstDeclStmt {$$ =$1;}
+    VarDeclStmt {$$ = $1;}
+    | ConstDeclStmt {$$ = $1;}
     ;
-
+VarDeclStmt
+    : Type VarDefList SEMICOLON {$$ = $2;}
+    ;
 ConstDeclStmt
     :
     CONST Type ConstDefList SEMICOLON
     {
         $$ = $3;
     }
+    ;
+VarDefList
+    : VarDefList COMMA VarDef {
+        $$ = $1;
+        $1->setNext($3);
+    } 
+    | VarDef {$$ = $1;}
     ;
 ConstDefList
     :
@@ -305,6 +294,39 @@ ConstDefList
     }
     |
     ConstDef{$$ = $1;}
+    ;
+VarDef
+    : ID {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        $$ = new DeclStmt(new Id(se));
+        delete []$1;
+    }
+    //赋予初值的情况
+    | ID ASSIGN InitVal {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
+        $$ = new DeclStmt(new Id(se), $3);
+        se = identifiers->lookup($1);
+        $$ = new AssignStmt(new Id(se), $3);
+        delete []$1;
+    }
+    ;
+ConstDef
+    : ID ASSIGN ConstInitVal {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry(TypeSystem::constIntType, $1, identifiers->getLevel());
+        ((IdentifierSymbolEntry*)se)->setConst();
+         identifiers->install($1, se);
+        ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
+        $$ = new DeclStmt(new Id(se), $3);
+        se = identifiers->lookup($1);
+        $$ = new AssignStmt(new Id(se), $3);
+        delete []$1;
+    }
     ;
 FuncDef
     :
