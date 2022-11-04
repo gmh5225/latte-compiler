@@ -65,15 +65,10 @@ Stmt
     | FuncDef {$$=$1;}
     ;
 LVal
-    : ID {
-        SymbolEntry *se;
+    : 
+    ID {
+        SymbolEntry* se;
         se = identifiers->lookup($1);
-        if(se == nullptr)
-        {
-            fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
-            delete [](char*)$1;
-            assert(se != nullptr);
-        }
         $$ = new Id(se);
         delete []$1;
     }

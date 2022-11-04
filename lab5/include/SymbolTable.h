@@ -10,6 +10,7 @@ class SymbolEntry
 {
 private:
     int kind;
+    SymbolEntry* next;
 protected:
     enum {CONSTANT, VARIABLE, TEMPORARY};
     Type *type;
@@ -22,6 +23,8 @@ public:
     bool isVariable() const {return kind == VARIABLE;};
     Type* getType() {return type;};
     virtual std::string toStr() = 0;
+    bool setNext(SymbolEntry* se);
+    SymbolEntry* getNext() const { return next; };
     // You can add any function you need here.
 };
 
@@ -135,7 +138,7 @@ private:
 public:
     SymbolTable();
     SymbolTable(SymbolTable *prev);
-    void install(std::string name, SymbolEntry* entry);
+    bool install(std::string name, SymbolEntry* entry);
     SymbolEntry* lookup(std::string name);
     SymbolTable* getPrev() {return prev;};
     int getLevel() {return level;};

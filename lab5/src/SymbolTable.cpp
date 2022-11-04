@@ -4,6 +4,25 @@
 #include <iostream>
 #include <sstream>
 
+bool SymbolEntry::setNext(SymbolEntry* se) {
+    SymbolEntry* s = this;
+    long unsigned int cnt =
+        ((FunctionType*)(se->getType()))->getParamsType().size();
+    if (cnt == ((FunctionType*)(s->getType()))->getParamsType().size())
+        return false;
+    while (s->getNext()) {
+        if (cnt == ((FunctionType*)(s->getType()))->getParamsType().size())
+            return false;
+        s = s->getNext();
+    }
+    if (s == this) {
+        this->next = se;
+    } else {
+        s->setNext(se);
+    }
+    return true;
+}
+
 SymbolEntry::SymbolEntry(Type *type, int kind) 
 {
     this->type = type;
@@ -104,9 +123,18 @@ SymbolEntry* SymbolTable::lookup(std::string name)
 }
 
 // install the entry into current symbol table.
-void SymbolTable::install(std::string name, SymbolEntry* entry)
+bool SymbolTable::install(std::string name, SymbolEntry* entry)
 {
-    symbolTable[name] = entry;
+    if(this->symbolTable.find(name) != this->symbolTable.end()){
+        SymbolEntry* se = this->symbolTable[name];
+        if (se->getType()->isFunc())
+            return se->setNext(entry);
+        return false;
+    }
+    else{
+        symbolTable[name] = entry;
+        return true;
+    }
 }
 
 int SymbolTable::counter = 0;
