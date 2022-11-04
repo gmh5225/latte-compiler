@@ -134,6 +134,16 @@ int BinaryExpr::getValue() {
     return value;
 }
 
+UnaryExpr::UnaryExpr(SymbolEntry* se, int op, ExprNode* expr): ExprNode(se), op(op), expr(expr) {
+    std::string op_str = op == UnaryExpr::NOT ? "!" : "-";
+    if (op == UnaryExpr::NOT) {
+        type = TypeSystem::intType;
+    }
+    else if (op == UnaryExpr::SUB) {
+        type = TypeSystem::intType;
+    }
+};
+
 void UnaryExpr::output(int level)
 {
     std::string op_str;

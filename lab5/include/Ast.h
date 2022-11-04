@@ -2,6 +2,7 @@
 #define __AST_H__
 
 #include <fstream>
+#include "Type.h"
 
 class SymbolEntry;
 
@@ -23,10 +24,12 @@ class ExprNode : public Node
 {
 protected:
     SymbolEntry *symbolEntry;
+    Type *type;
 public:
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
     SymbolEntry* getSymbolEntry() {return symbolEntry;};
     virtual int getValue() {return -1;};
+    virtual Type* getType() {return type;};
 };
 
 class BinaryExpr : public ExprNode
@@ -48,9 +51,11 @@ private:
     ExprNode *expr;
 public:
     enum {NOT, SUB};
-    UnaryExpr(SymbolEntry *se, int op, ExprNode*expr) : ExprNode(se), op(op), expr(expr){};
+    UnaryExpr(SymbolEntry *se, int op, ExprNode*expr);
     void output(int level);
     int getValue();
+    int getOp() const {return op;};
+    void setType(Type* type) {this->type = type;}
 };
 
 class Constant : public ExprNode

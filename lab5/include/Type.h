@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "Ast.h"
+#include "SymbolTable.h"
 
 class Type
 {

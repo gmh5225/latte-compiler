@@ -49,13 +49,13 @@ LEQ "<="
 NEQ "!="
 ASSIGN "="
 PLUSASSIGN "+="
-MINUSASSIGN "-="
+SUBASSIGN "-="
 MULASSIGN "*="
 DIVASSIGN "/="
 GRA ">"
 LES "<"
 PLUS "+"
-MINUS "-"
+SUB "-"
 MUL "*"
 DIV "/"
 MOD "%"
@@ -168,8 +168,8 @@ commentlineend \n
 }
 "-=" {
     if(dump_tokens)
-        DEBUG_FOR_LAB4("MINUASSIGN", "-=");
-    return MINUASSIGN;
+        DEBUG_FOR_LAB4("SUBASSIGN", "-=");
+    return SUBASSIGN;
 }
 "*=" {
     if(dump_tokens)
@@ -204,8 +204,8 @@ commentlineend \n
 }
 "-" {
     if(dump_tokens)
-        DEBUG_FOR_LAB4("MINUS", "-");
-    return MINUS;
+        DEBUG_FOR_LAB4("SUB", "-");
+    return SUB;
 }
 "*" {
     if(dump_tokens)
