@@ -269,7 +269,7 @@ ConstDef
         identifiers->install($1,se);
 
         ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
-        $$ = new DeclStmt(new ID(se),$3);
+        $$ = new DeclStmt(new Id(se),$3);
         delete []$1;
     }
     ;

@@ -41,9 +41,8 @@ private:
 public:
     ConstantSymbolEntry(Type *type, int value);
     virtual ~ConstantSymbolEntry() {};
-    int getValue() const {return value;};
-    std::string toStr();
     int getValue();
+    std::string toStr();
     // You can add any function you need here.
 };
 
@@ -80,6 +79,7 @@ private:
     int paramNo;
     bool sysy;
     bool constant;
+    bool initial;
     // You can add any field you need here.
 
 public:

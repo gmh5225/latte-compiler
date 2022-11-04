@@ -109,7 +109,7 @@ class DeclStmt : public StmtNode
 private:
     Id *id;
 public:
-    DeclStmt(Id *id) : id(id){};
+    DeclStmt(Id* id, ExprNode* expr = nullptr) : id(id) {};
     void output(int level);
     Id* getId() {return id;};
 };

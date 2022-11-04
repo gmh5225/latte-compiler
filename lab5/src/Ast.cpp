@@ -87,6 +87,53 @@ void BinaryExpr::output(int level)
     expr2->output(level + 4);
 }
 
+int BinaryExpr::getValue() {
+    int value = 0;
+    switch (op) {
+        case ADD:
+            value = expr1->getValue() + expr2->getValue();
+            break;
+        case SUB:
+            value = expr1->getValue() - expr2->getValue();
+            break;
+        case MUL:
+            value = expr1->getValue() * expr2->getValue();
+            break;
+        case DIV:
+            if(expr2->getValue())
+                value = expr1->getValue() / expr2->getValue();
+            break;
+        case MOD:
+            value = expr1->getValue() % expr2->getValue();
+            break;
+        case AND:
+            value = expr1->getValue() && expr2->getValue();
+            break;
+        case OR:
+            value = expr1->getValue() || expr2->getValue();
+            break;
+        case LES:
+            value = expr1->getValue() < expr2->getValue();
+            break;
+        case LEQ:
+            value = expr1->getValue() <= expr2->getValue();
+            break;
+        case GRA:
+            value = expr1->getValue() > expr2->getValue();
+            break;
+        case GEQ:
+            value = expr1->getValue() >= expr2->getValue();
+            break;
+        case EQ:
+            value = expr1->getValue() == expr2->getValue();
+            break;
+        case NEQ:
+            value = expr1->getValue() != expr2->getValue();
+            break;
+    }
+    return value;
+}
+
 void UnaryExpr::output(int level)
 {
     std::string op_str;
@@ -100,6 +147,19 @@ void UnaryExpr::output(int level)
     }
     fprintf(yyout, "%*cUnaryExpr\top: %s\n", level, ' ', op_str.c_str());
     expr->output(level + 4);
+}
+
+int UnaryExpr::getValue() {
+    int value = 0;
+    switch (op) {
+        case NOT:
+            value = !(expr->getValue());
+            break;
+        case SUB:
+            value = -(expr->getValue());
+            break;
+    }
+    return value;
 }
 
 void Constant::output(int level)
@@ -124,6 +184,10 @@ void Constant::output(int level)
     }
 }
 
+int Constant::getValue() {
+    return ((ConstantSymbolEntry*)symbolEntry)->getValue();
+}
+
 void Id::output(int level)
 {
     std::string name, type;
@@ -133,6 +197,10 @@ void Id::output(int level)
     scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getScope();
     fprintf(yyout, "%*cId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
             name.c_str(), scope, type.c_str());
+}
+
+int Id::getValue() {
+    return ((IdentifierSymbolEntry*)symbolEntry)->getValue();
 }
 
 void ConstId::output(int level)

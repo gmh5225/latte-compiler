@@ -1,4 +1,6 @@
 #include "SymbolTable.h"
+#include <Type.h>
+#include <assert.h>
 #include <iostream>
 #include <sstream>
 
@@ -20,10 +22,29 @@ std::string ConstantSymbolEntry::toStr()
     return buffer.str();
 }
 
+int ConstantSymbolEntry::getValue() {
+    assert(type->isInt());
+    return value;
+}
+
 IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, int scope, int paramNo, bool sysy)
      : SymbolEntry(type, SymbolEntry::VARIABLE), name(name), paramNo(paramNo), sysy(sysy)
 {
     this->scope = scope;
+    this->initial = false;
+}
+
+void IdentifierSymbolEntry::setValue(int value) {
+    if (((IntType*)(this->getType()))->isConst()) {
+        if (!initial) {
+            this->value = value;
+            initial = true;
+        } else {
+            // 需要报错
+        }
+    } else {
+        this->value = value;
+    }
 }
 
 std::string IdentifierSymbolEntry::toStr()
