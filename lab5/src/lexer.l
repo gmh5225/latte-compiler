@@ -320,6 +320,25 @@ commentlineend \n
     return INTEGER;
 }
 
+"putint" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("ID", yytext);
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    std::vector<Type*> vecType;
+    std::vector<SymbolEntry*> vecSe;
+    vecType.push_back(TypeSystem::intType);
+    Type* funcType = new FunctionType(TypeSystem::voidType, vecType,vecSe);
+    SymbolTable* st = identifiers;
+    while(st->getPrev())
+        st = st->getPrev();
+    SymbolEntry* se = new IdentifierSymbolEntry(funcType, yytext, st->getLevel(), -1, true);
+    st->install(yytext, se);
+    return ID;
+}
+
 "getint" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("ID", yytext);
@@ -329,7 +348,42 @@ commentlineend \n
     yylval.strtype = lexeme;
     std::vector<Type*> vecType;
     std::vector<SymbolEntry*> vecSe;
-    Type* funcType = new FunctionType(TypeSystem::intType, vecType, vecSe);
+    Type* funcType = new FunctionType(TypeSystem::intType, vecType,vecSe);
+    SymbolTable* st = identifiers;
+    while(st->getPrev())
+        st = st->getPrev();
+    SymbolEntry* se = new IdentifierSymbolEntry(funcType, yytext, st->getLevel(), -1, true);
+    st->install(yytext, se);
+    return ID;
+}
+"putch" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("ID", yytext);
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    std::vector<Type*> vecType;
+    std::vector<SymbolEntry*> vecSe;
+    vecType.push_back(TypeSystem::intType);
+    Type* funcType = new FunctionType(TypeSystem::voidType, vecType,vecSe);
+    SymbolTable* st = identifiers;
+    while(st->getPrev())
+        st = st->getPrev();
+    SymbolEntry* se = new IdentifierSymbolEntry(funcType, yytext, st->getLevel(), -1, true);
+    st->install(yytext, se);
+    return ID;
+}
+"getch" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("ID", yytext);
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    std::vector<Type*> vecType;
+    std::vector<SymbolEntry*> vecSe;
+    Type* funcType = new FunctionType(TypeSystem::intType, vecType,vecSe);
     SymbolTable* st = identifiers;
     while(st->getPrev())
         st = st->getPrev();

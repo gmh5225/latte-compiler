@@ -307,5 +307,52 @@ void FunctionDef::output(int level)
     type = se->getType()->toStr();
     fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
             name.c_str(), type.c_str());
+    if (decl) {
+        decl->output(level + 4);
+    }
     stmt->output(level + 4);
+}
+
+CallFunc::CallFunc(SymbolEntry* se, ExprNode* param) : ExprNode(se), param(param) {
+    SymbolEntry* s = se;
+    int paramNo = 0;
+    ExprNode* temp = param;
+    while (temp) {
+        paramNo++;
+        temp = (ExprNode*)(temp->getNext());
+    }
+    while (s) {
+        Type* type = s->getType();
+        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();
+        if ((long unsigned int)paramNo == params.size()) {
+            this->symbolEntry = s;
+            break;
+        }
+        s = s->getNext();
+    }
+}
+
+void CallFunc::output(int level) {
+    std::string name, type;
+    int scope;
+    if (symbolEntry) {
+        name = symbolEntry->toStr();
+        type = symbolEntry->getType()->toStr();
+        scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getScope();
+        fprintf(yyout, "%*cCallFunc\tfunction name: %s\tscope: %d\ttype: %s\n", level, ' ', name.c_str(), scope, type.c_str());
+        Node* temp = param;
+        while (temp) {
+            temp->output(level + 4);
+            temp = temp->getNext();
+        }
+    }
+}
+
+void ExprStmt::output(int level) {
+    fprintf(yyout, "%*cExprStmt\n", level, ' ');
+    expr->output(level + 4);
+}
+
+void BlankStmt::output(int level) {
+    fprintf(yyout, "%*cBlankStmt\n", level, ' ');
 }

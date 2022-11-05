@@ -88,6 +88,14 @@ public:
     void output(int level);
 };
 
+class CallFunc : public ExprNode {
+   private:
+    ExprNode* param;
+   public:
+    CallFunc(SymbolEntry* se, ExprNode* param = nullptr);
+    void output(int level);
+};
+
 class StmtNode : public Node
 {};
 
@@ -186,6 +194,20 @@ private:
     ExprNode *expr;
 public:
     AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
+    void output(int level);
+};
+
+class ExprStmt : public StmtNode {
+private:
+    ExprNode* expr;
+public:
+    ExprStmt(ExprNode* expr) : expr(expr){};
+    void output(int level);
+};
+
+class BlankStmt : public StmtNode {
+   public:
+    BlankStmt(){};
     void output(int level);
 };
 

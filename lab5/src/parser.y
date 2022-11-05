@@ -38,8 +38,8 @@
 %token ASSIGN PLUSASSIGN SUBASSIGN MULASSIGN DIVASSIGN
 %token CONST WHILE BREAK CONTINUE RETURN
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef FuncParam FuncParams ConstDef ConstDeclStmt ConstDefList VarDeclStmt VarDef VarDefList
-%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp ConstInitVal InitVal
+%nterm <stmttype> Stmts Stmt ExprStmt AssignStmt BlockStmt IfStmt ReturnStmt BlankStmt DeclStmt FuncDef FuncParam FuncParams ConstDef ConstDeclStmt ConstDefList VarDeclStmt VarDef VarDefList
+%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp ConstInitVal InitVal FuncParamsCall
 %nterm <type> Type
 
 %precedence THEN
@@ -58,11 +58,13 @@ Stmts
     ;
 Stmt
     : AssignStmt {$$=$1;}
+    | ExprStmt {$$=$1;}
     | BlockStmt {$$=$1;}
     | IfStmt {$$=$1;}
     | ReturnStmt {$$=$1;}
     | DeclStmt {$$=$1;}
     | FuncDef {$$=$1;}
+    | BlankStmt {$$ = $1;}
     ;
 LVal
     : 
@@ -73,10 +75,20 @@ LVal
         delete []$1;
     }
     ;
+ExprStmt
+    : Exp SEMICOLON {
+        $$ = new ExprStmt($1);
+    }
+    ;
 AssignStmt
     :
     LVal ASSIGN Exp SEMICOLON {
         $$ = new AssignStmt($1, $3);
+    }
+    ;
+BlankStmt
+    : SEMICOLON {
+        $$ = new BlankStmt();
     }
     ;
 BlockStmt
@@ -125,6 +137,16 @@ PrimaryExp
     | INTEGER {
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, $1);
         $$ = new Constant(se);
+    }
+    | ID LPAREN FuncParamsCall RPAREN {
+        SymbolEntry* se;
+        se = identifiers->lookup($1);
+        $$ = new CallFunc(se, $3);
+    }
+    | ID LPAREN RPAREN {
+        SymbolEntry* se;
+        se = identifiers->lookup($1);
+        $$ = new CallFunc(se);
     }
     ;
 
@@ -373,9 +395,16 @@ FuncParam
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel(), paramNo++);
         identifiers->install($2, se);
         $$ = new DeclStmt(new Id(se));
-        delete []$2;
     }
     | %empty {$$ = nullptr;}
+    ;
+FuncParamsCall
+    : 
+    Exp {$$ = $1;}
+    | FuncParamsCall COMMA Exp {
+        $$ = $1;
+        $$->setNext($3);//参数从左到右建立 next
+    }
     ;
 
 %%

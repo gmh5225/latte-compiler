@@ -2,7 +2,6 @@
 #define __TYPE_H__
 #include <vector>
 #include <string>
-#include "Ast.h"
 #include "SymbolTable.h"
 
 class Type
