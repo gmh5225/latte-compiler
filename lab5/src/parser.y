@@ -8,6 +8,7 @@
     int yylex();
     int yyerror( char const * );
     int paramNo = 0;
+    std::stack<StmtNode*> whileStk;
 
     #include<iostream>
 }
@@ -38,7 +39,7 @@
 %token ASSIGN PLUSASSIGN SUBASSIGN MULASSIGN DIVASSIGN
 %token CONST WHILE BREAK CONTINUE RETURN
 
-%nterm <stmttype> Stmts Stmt ExprStmt AssignStmt BlockStmt IfStmt ReturnStmt BlankStmt DeclStmt FuncDef FuncParam FuncParams ConstDef ConstDeclStmt ConstDefList VarDeclStmt VarDef VarDefList
+%nterm <stmttype> Stmts Stmt ExprStmt AssignStmt BlockStmt IfStmt ReturnStmt BlankStmt DeclStmt FuncDef FuncParam FuncParams ConstDef ConstDeclStmt ConstDefList VarDeclStmt VarDef VarDefList WhileStmt BreakStmt ContinueStmt
 %nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp ConstInitVal InitVal FuncParamsCall
 %nterm <type> Type
 
@@ -65,6 +66,9 @@ Stmt
     | DeclStmt {$$=$1;}
     | FuncDef {$$=$1;}
     | BlankStmt {$$ = $1;}
+    | WhileStmt {$$ = $1;}
+    | BreakStmt {$$=$1;}
+    | ContinueStmt {$$=$1;}
     ;
 LVal
     : 
@@ -117,6 +121,31 @@ ReturnStmt
         $$ = new ReturnStmt($2);
     }
     ;
+
+WhileStmt
+    : WHILE LPAREN Cond RPAREN {
+        StmtNode *whileNode = new WhileStmt($3);    
+        whileStk.push(whileNode);
+    }
+    Stmt {  
+        StmtNode *whileNode =whileStk.top();
+        ((WhileStmt*)whileNode)->setStmt($6);//设置内部stmt语句
+        $$=whileNode;
+        whileStk.pop();
+    }
+    ;
+//break和continue要设置匹配的while
+BreakStmt
+    : BREAK SEMICOLON {
+        $$ = new BreakStmt(whileStk.top());
+    }
+    ;
+ContinueStmt
+    : CONTINUE SEMICOLON {
+        $$ = new ContinueStmt(whileStk.top());
+    }
+    ;
+
 Exp
     :
     AddExp {$$ = $1;}

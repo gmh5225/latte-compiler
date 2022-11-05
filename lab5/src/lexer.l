@@ -73,14 +73,11 @@ COMMA ","
 SEMICOLON ";"
 
     // 注释
-commentbegin "/*"
-commentelement .|\n
-commentend "*/"
-%x COMMENT
-commentlinebegin "//"
-commentlineelement .
-commentlineend \n
-%x COMMENTLINE
+LINECOMMENT \/\/[^\n]*
+BLOCKCOMMENTBEGIN "/*"
+BLOCKCOMMENTELEMENT .
+BLOCKCOMMENTEND "*/"
+%x BLOCKCOMMENT
 
 %%
 
@@ -405,11 +402,9 @@ commentlineend \n
 {EOL} yylineno++;
 {WHITE}
 
-{commentbegin} {BEGIN COMMENT;}
-<COMMENT>{commentelement} {if(!strcmp(yytext, "\n")) yylineno++;}
-<COMMENT>{commentend} {BEGIN INITIAL;}
-{commentlinebegin} {BEGIN COMMENTLINE;}
-<COMMENTLINE>{commentlineelement} {}
-<COMMENTLINE>{commentlineend} {yylineno++; BEGIN INITIAL;}
+{LINECOMMENT} {yylineno++; BEGIN INITIAL;}
+{BLOCKCOMMENTBEGIN} {BEGIN BLOCKCOMMENT;}
+<BLOCKCOMMENT>{BLOCKCOMMENTELEMENT} {if(!strcmp(yytext, "\n")) yylineno++;}
+<BLOCKCOMMENT>{BLOCKCOMMENTEND} {BEGIN INITIAL;}
 
 %%

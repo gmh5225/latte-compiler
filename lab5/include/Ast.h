@@ -160,6 +160,7 @@ private:
 public:
     WhileStmt(ExprNode* cond, StmtNode* stmt=nullptr) : cond(cond), stmt(stmt) {};
     void output(int level);
+    void setStmt(StmtNode* stmt){this->stmt = stmt;};
 };
 
 class BreakStmt : public StmtNode {
