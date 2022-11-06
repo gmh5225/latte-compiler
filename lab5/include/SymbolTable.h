@@ -96,6 +96,7 @@ public:
     bool getConst() const {return constant;};
     void setValue(int value);
     int getValue() const {return value;};
+    void setArrayValue(int* arrayValue);
     // You can add any function you need here.
 };
 

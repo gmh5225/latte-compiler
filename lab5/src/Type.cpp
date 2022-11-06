@@ -27,3 +27,9 @@ std::string FunctionType::toStr()
     buffer << returnType->toStr() << "()";
     return buffer.str();
 }
+
+std::string ArrayType::toStr() {
+    std::ostringstream buffer;
+    buffer << "[" << ((ArrayType*)this)->getLength() << " ] ";
+    return buffer.str();
+}

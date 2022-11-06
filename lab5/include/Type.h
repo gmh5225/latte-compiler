@@ -10,7 +10,7 @@ class Type
 private:
     int kind;
 protected:
-    enum {INT, VOID, BOOL, FUNC,ARRAY,PTR};
+    enum {INT, VOID, BOOL, FUNC, ARRAY};
     int size;
 public:
     Type(int kind) : kind(kind) {};
@@ -20,9 +20,8 @@ public:
     bool isVoid() const {return kind == VOID;};
     bool isBool() const {return kind == BOOL;};
     bool isFunc() const {return kind == FUNC;};
-    bool isArray() const { return kind == ARRAY;};
-    bool isPtr() const { return kind == PTR; };
-    int getSize() const { return size; };
+    bool isArray() const {return kind == ARRAY;};
+    int getSize() const {return size;};
 };
 
 class IntType : public Type
@@ -57,26 +56,13 @@ public:
     std::vector<Type*> getParamsType() { return paramsType; };
 };
 
-class PointerType : public Type {
-   private:
-    Type* valueType;
-
-   public:
-    PointerType(Type* valueType) : Type(Type::PTR) {
-        this->valueType = valueType;
-    };
-    std::string toStr();
-    Type* getType() const { return valueType; };
-};
-
 class ArrayType : public Type {
-   private:
+private:
     Type* elementType;
     Type* arrayType = nullptr;
     int length;
     bool constant;
-
-   public:
+public:
     ArrayType(Type* elementType, int length, bool constant = false)
         : Type(Type::ARRAY),
           elementType(elementType),

@@ -41,7 +41,7 @@
 %token CONST WHILE BREAK CONTINUE RETURN
 
 %nterm <stmttype> Stmts Stmt ExprStmt AssignStmt BlockStmt IfStmt ReturnStmt BlankStmt DeclStmt FuncDef FuncParam FuncParams ConstDef ConstDeclStmt ConstDefList VarDeclStmt VarDef VarDefList WhileStmt BreakStmt ContinueStmt
-%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp ConstInitVal InitVal FuncParamsCall ArrayIndices FuncArrayIndices
+%nterm <exprtype> Exp UnaryExp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp EqExp ConstExp ConstInitVal InitVal FuncParamsCall ArrayIndex FuncArrayIndex
 %nterm <type> Type
 
 %precedence THEN
@@ -79,11 +79,9 @@ LVal
         $$ = new Id(se);
         delete []$1;
     }
-    | ID ArrayIndices{
+    | ID ArrayIndex {
         SymbolEntry* se;
         se = identifiers->lookup($1);
-        if(se == nullptr)
-            fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
         $$ = new Id(se, $2);
         delete []$1;
     }
@@ -363,40 +361,6 @@ VarDef
         $$ = new DeclStmt(new Id(se));
         delete []$1;
     }
-    | ID ArrayIndices {
-        SymbolEntry* se;
-        std::vector<int> vec;//分别存放维度值
-        ExprNode* temp = $2;
-        //编译每个维度数组 从高位到低维
-        while(temp){
-            vec.push_back(temp->getValue());
-            temp = (ExprNode*)(temp->getNext());
-        }
-        Type *type = TypeSystem::intType;
-        Type* temp1;
-        //注意是倒序 即从右向左 [2][3] 2个数组指针 每行3个整型元素
-        //初始为整型元素
-        while(!vec.empty()){
-        //嵌套数组类型
-            temp1 = new ArrayType(type, vec.back());
-            //考虑多维数组 每个元素是数组指针
-            //如果元素是数组 type设置为数组维度
-            if(type->isArray())
-                ((ArrayType*)type)->setArrayType(temp1);
-            type = temp1;
-            vec.pop_back();
-        }
-        //type保存最低维 a[2][4]即保存2对应类型
-        arrayType = (ArrayType*)type;
-        se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
-        
-       // ((IdentifierSymbolEntry*)se)->setAllZero();//zero是干什么的？
-        //int *p = new int[type->getSize()];//设置整型空间 即长度*大小
-        //((IdentifierSymbolEntry*)se)->setArrayValue(p);
-        identifiers->install($1, se);
-        $$ = new DeclStmt(new Id(se));
-        delete []$1;
-    }
     //赋予初值的情况
     | ID ASSIGN InitVal {
         SymbolEntry* se;
@@ -408,17 +372,20 @@ VarDef
         $$ = new AssignStmt(new Id(se), $3);
         delete []$1;
     }
+    | ID ArrayIndex {
+        SymbolEntry* se;
+        ExprNode* temp = $2;
+        Type* type = new ArrayType(TypeSystem::intType, temp->getValue());
+        arrayType = (ArrayType*)type;
+        se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
+        int *p = new int[type->getSize()];//设置整型空间 即长度*大小
+        ((IdentifierSymbolEntry*)se)->setArrayValue(p);
+        identifiers->install($1, se);
+        $$ = new DeclStmt(new Id(se));
+        delete []$1;
+    }
     ;
 
-FuncArrayIndices 
-    : LBRACE RBRACE {
-        $$ = new ExprNode(nullptr);
-    }
-    | FuncArrayIndices LBRACE Exp RBRACE {
-        $$ = $1;
-        $$->setNext($3);
-    }
-    ;
 ConstDef
     : ID ASSIGN ConstInitVal {
         SymbolEntry* se;
@@ -432,11 +399,7 @@ ConstDef
         delete []$1;
     }
     ;
-ArrayIndices
-    : LBRACE ConstExp RBRACE {
-        $$ = $2;
-    }
-    ;
+
 FuncDef
     :
     Type ID {
@@ -483,30 +446,12 @@ FuncParam
         identifiers->install($2, se);
         $$ = new DeclStmt(new Id(se));
     }
-    |Type ID FuncArrayIndices {
-       
+    | Type ID FuncArrayIndex {
         SymbolEntry* se;
         ExprNode* temp = $3;
-        Type* arr = TypeSystem::intType;
-        Type* arr1;
-        std::stack<ExprNode*> stk;
-        //对数组维度进行遍历 放入栈中
-        while(temp){
-            stk.push(temp);
-            temp = (ExprNode*)(temp->getNext());
-        }
-        //获得最低维度
-        while(!stk.empty()){
-            arr1 = new ArrayType(arr, stk.top()->getValue());
-            if(arr->isArray())
-                ((ArrayType*)arr)->setArrayType(arr1);
-            arr = arr1;
-            stk.pop();
-        }
+        Type* arr = new ArrayType(TypeSystem::intType, temp->getValue());
         se = new IdentifierSymbolEntry(arr, $2, identifiers->getLevel(), paramNo++);
         identifiers->install($2, se);
-        ((IdentifierSymbolEntry*)se)->setLabel();
-        ((IdentifierSymbolEntry*)se)->setAddr(new Operand(se));
         $$ = new DeclStmt(new Id(se));
         delete []$2;
     }
@@ -518,6 +463,19 @@ FuncParamsCall
     | FuncParamsCall COMMA Exp {
         $$ = $1;
         $$->setNext($3);//参数从左到右建立 next
+    }
+    ;
+ArrayIndex
+    : LSQUARE ConstExp RSQUARE {
+        $$ = $2;
+    }
+    ;
+FuncArrayIndex
+    : LSQUARE RSQUARE {
+        $$ = new ExprNode(nullptr);
+    }
+    | LSQUARE Exp RSQUARE {
+        $$ = $2;
     }
     ;
 

@@ -58,11 +58,28 @@ void IdentifierSymbolEntry::setValue(int value) {
         if (!initial) {
             this->value = value;
             initial = true;
-        } else {
+        } 
+        else {
             // 需要报错
         }
-    } else {
+    } 
+    else {
         this->value = value;
+    }
+}
+
+void IdentifierSymbolEntry::setArrayValue(int* arrayValue) {
+    if (((IntType*)(this->getType()))->isConst()) {
+        if (!initial) {
+            this->arrayValue = arrayValue;
+            initial = true;
+        } 
+        else {
+            // 需要报错
+        }
+    } 
+    else {
+        this->arrayValue = arrayValue;
     }
 }
 

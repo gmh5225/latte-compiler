@@ -32,6 +32,7 @@ public:
     SymbolEntry* getSymbolEntry() {return symbolEntry;};
     virtual int getValue() {return -1;};
     virtual Type* getType() {return type;};
+    void output(int level);
 };
 
 class BinaryExpr : public ExprNode
