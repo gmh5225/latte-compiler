@@ -172,6 +172,37 @@ int UnaryExpr::getValue() {
     return value;
 }
 
+Type* Id::getType() {
+    SymbolEntry* se = this->getSymbolEntry();
+    if (!se)
+        return TypeSystem::voidType;
+    Type* type = se->getType();
+    if (!arrIdx)
+        return type;
+    else if (!type->isArray()) {
+        fprintf(stderr, "subscripted value is not an array\n");
+        return TypeSystem::voidType;
+    } else {
+        ArrayType* temp1 = (ArrayType*)type;
+        ExprNode* temp2 = arrIdx;
+        while (!temp1->getElementType()->isInt()) {
+            if (!temp2) {
+                return temp1;
+            }
+            temp2 = (ExprNode*)(temp2->getNext());
+            temp1 = (ArrayType*)(temp1->getElementType());
+        }
+        if (!temp2) {
+            fprintf(stderr, "subscripted value is not an array\n");
+            return temp1;
+        } else if (temp2->getNext()) {
+            fprintf(stderr, "subscripted value is not an array\n");
+            return TypeSystem::voidType;
+        }
+    }
+    return TypeSystem::intType;
+}
+
 void Constant::output(int level)
 {
     std::string type, value;

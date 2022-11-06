@@ -24,6 +24,7 @@ public:
     Type* getType() {return type;};
     virtual std::string toStr() = 0;
     bool setNext(SymbolEntry* se);
+    void setArrayValue(int* arrayValue);
     SymbolEntry* getNext() const { return next; };
     // You can add any function you need here.
 };
@@ -82,6 +83,7 @@ private:
     int paramNo;
     bool sysy;
     bool constant;
+    int* arrayValue;
     bool initial;
     // You can add any field you need here.
 
@@ -124,6 +126,7 @@ public:
     TemporarySymbolEntry(Type *type, int label);
     virtual ~TemporarySymbolEntry() {};
     std::string toStr();
+    int getLabel() const {return label;};
     // You can add any function you need here.
 };
 

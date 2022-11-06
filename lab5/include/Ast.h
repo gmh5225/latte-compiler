@@ -22,6 +22,8 @@ public:
 
 class ExprNode : public Node
 {
+private:
+    int kind;
 protected:
     SymbolEntry *symbolEntry;
     Type *type;
@@ -68,10 +70,25 @@ public:
 
 class Id : public ExprNode
 {
-public:
-    Id(SymbolEntry *se) : ExprNode(se){};
+   private:
+    ExprNode* arrIdx;
+    bool left = false;
+
+   public:
+    Id(SymbolEntry* se, ExprNode* arrIdx = nullptr)
+        : ExprNode(se), arrIdx(arrIdx) {
+        if (se) {
+            type = se->getType();
+            SymbolTable::getLabel();
+        }
+        };
     void output(int level);
+    bool typeCheck(Type* retType = nullptr);
     int getValue();
+    ExprNode* getArrIdx() { return arrIdx; };
+    Type* getType();
+    bool isLeft() const { return left; };
+    void setLeft() { left = true; }    
 };
 
 class ConstId : public ExprNode
