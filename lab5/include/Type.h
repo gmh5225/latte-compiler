@@ -54,6 +54,7 @@ public:
     Type(Type::FUNC), returnType(returnType), paramsType(paramsType), paramsSe(paramsSe){};
     std::string toStr();
     std::vector<Type*> getParamsType() { return paramsType; };
+    Type* getRetType() { return returnType; };
 };
 
 class ArrayType : public Type {

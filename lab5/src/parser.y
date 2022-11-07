@@ -66,8 +66,8 @@ Stmt
     | ReturnStmt {$$=$1;}
     | DeclStmt {$$=$1;}
     | FuncDef {$$=$1;}
-    | BlankStmt {$$ = $1;}
-    | WhileStmt {$$ = $1;}
+    | BlankStmt {$$=$1;}
+    | WhileStmt {$$=$1;}
     | BreakStmt {$$=$1;}
     | ContinueStmt {$$=$1;}
     ;
@@ -103,15 +103,17 @@ BlankStmt
     }
     ;
 BlockStmt
-    :   LBRACE 
-        {identifiers = new SymbolTable(identifiers);} 
-        Stmts RBRACE 
-        {
-            $$ = new CompoundStmt($3);
-            SymbolTable *top = identifiers;
-            identifiers = identifiers->getPrev();
-            delete top;
-        }
+    : LBRACE {identifiers = new SymbolTable(identifiers);} 
+    Stmts RBRACE 
+    {
+        $$ = new CompoundStmt($3);
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+    }
+    | LBRACE RBRACE {
+        $$ = new BlankStmt();
+    }
     ;
 IfStmt
     : IF LPAREN Cond RPAREN Stmt %prec THEN {
@@ -126,6 +128,9 @@ ReturnStmt
     :
     RETURN Exp SEMICOLON{
         $$ = new ReturnStmt($2);
+    }
+    | RETURN SEMICOLON {
+        $$ = new ReturnStmt();
     }
     ;
 

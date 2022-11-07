@@ -107,9 +107,9 @@ public:
 };
 
 class CallFunc : public ExprNode {
-   private:
+private:
     ExprNode* param;
-   public:
+public:
     CallFunc(SymbolEntry* se, ExprNode* param = nullptr);
     void output(int level);
 };
@@ -202,7 +202,7 @@ class ReturnStmt : public StmtNode
 private:
     ExprNode *retValue;
 public:
-    ReturnStmt(ExprNode*retValue) : retValue(retValue) {};
+    ReturnStmt(ExprNode*retValue=nullptr) : retValue(retValue) {};
     void output(int level);
 };
 

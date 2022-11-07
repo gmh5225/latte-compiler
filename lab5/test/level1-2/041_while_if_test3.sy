@@ -21,5 +21,6 @@ int deepWhileBr(int a, int b) {
 int main() {
   int p;
   p = 2;
+  deepWhileBr(p, p);
   return deepWhileBr(p, p);
 }
