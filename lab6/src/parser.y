@@ -1,10 +1,15 @@
 %code top{
     #include <iostream>
     #include <assert.h>
+    #include <stack>
+    #include <cstring>
     #include "parser.h"
     extern Ast ast;
     int yylex();
     int yyerror( char const * );
+    int paramNo = 0;
+    std::stack<StmtNode*> whileStk;
+    ArrayType* arrayType;
 }
 
 %code requires {
@@ -19,6 +24,7 @@
     StmtNode* stmttype;
     ExprNode* exprtype;
     Type* type;
+    SymbolEntry* se;
 }
 
 %start Program
@@ -409,8 +415,8 @@ FuncDef
         std::vector<SymbolEntry*> vecSe;
         DeclStmt* temp = (DeclStmt*)$5;
         while(temp){
-            vecType.push_back(temp->getId()->getSymbolEntry()->getType());
-            vecSe.push_back(temp->getId()->getSymbolEntry());
+            vecType.push_back(temp->getId()->getSymPtr()->getType());
+            vecSe.push_back(temp->getId()->getSymPtr());
             temp = (DeclStmt*)(temp->getNext());
         }
         //输入参数类型和符号表项

@@ -2,13 +2,16 @@
 #define __TYPE_H__
 #include <vector>
 #include <string>
+#include "SymbolTable.h"
+#include "Ast.h"
 
 class Type
 {
 private:
     int kind;
 protected:
-    enum {INT, VOID, FUNC, PTR};
+    enum {INT, VOID, FUNC, PTR, BOOL, ARRAY};
+    int size;
 public:
     Type(int kind) : kind(kind) {};
     virtual ~Type() {};
@@ -16,15 +19,20 @@ public:
     bool isInt() const {return kind == INT;};
     bool isVoid() const {return kind == VOID;};
     bool isFunc() const {return kind == FUNC;};
+    bool isBool() const {return kind == BOOL;};
+    bool isArray() const {return kind == ARRAY;};
+    int getSize() const {return size;};
 };
 
 class IntType : public Type
 {
 private:
     int size;
+    bool constant;
 public:
-    IntType(int size) : Type(Type::INT), size(size){};
+    IntType(int size, bool constant = false) : Type(Type::INT), size(size), constant(constant){};
     std::string toStr();
+    bool isConst() const {return constant;};
 };
 
 class VoidType : public Type
@@ -39,11 +47,35 @@ class FunctionType : public Type
 private:
     Type *returnType;
     std::vector<Type*> paramsType;
+    std::vector<SymbolEntry*> paramsSe;
 public:
-    FunctionType(Type* returnType, std::vector<Type*> paramsType) : 
-    Type(Type::FUNC), returnType(returnType), paramsType(paramsType){};
+    FunctionType(Type* returnType, std::vector<Type*> paramsType, std::vector<SymbolEntry*> paramsSe) : 
+    Type(Type::FUNC), returnType(returnType), paramsType(paramsType), paramsSe(paramsSe){};
     Type* getRetType() {return returnType;};
+    std::vector<Type*> getParamsType() { return paramsType; };
     std::string toStr();
+};
+
+class ArrayType : public Type {
+private:
+    Type* elementType;
+    Type* arrayType = nullptr;
+    int length;
+    bool constant;
+public:
+    ArrayType(Type* elementType, int length, bool constant = false)
+        : Type(Type::ARRAY),
+          elementType(elementType),
+          length(length),
+          constant(constant) {
+        size = elementType->getSize() * length;
+    };
+    std::string toStr();
+    int getLength() const { return length; };
+    Type* getElementType() const { return elementType; };
+    void setArrayType(Type* arrayType) { this->arrayType = arrayType; };
+    bool isConst() const { return constant; };
+    Type* getArrayType() const { return arrayType; };
 };
 
 class PointerType : public Type
@@ -59,12 +91,14 @@ class TypeSystem
 {
 private:
     static IntType commonInt;
-    static IntType commonBool;
     static VoidType commonVoid;
+    static IntType commonBool;
+    static IntType commonConstInt;
 public:
     static Type *intType;
     static Type *voidType;
     static Type *boolType;
+    static Type *constIntType;
 };
 
 #endif

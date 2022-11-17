@@ -11,10 +11,10 @@ class SymbolEntry
 {
 private:
     int kind;
+    SymbolEntry* next;
 protected:
     enum {CONSTANT, VARIABLE, TEMPORARY};
     Type *type;
-
 public:
     SymbolEntry(Type *type, int kind);
     virtual ~SymbolEntry() {};
@@ -23,6 +23,8 @@ public:
     bool isVariable() const {return kind == VARIABLE;};
     Type* getType() {return type;};
     void setType(Type *type) {this->type = type;};
+    bool setNext(SymbolEntry* se);
+    SymbolEntry* getNext() const {return next;};
     virtual std::string toStr() = 0;
     // You can add any function you need here.
 };
@@ -77,17 +79,28 @@ private:
     enum {GLOBAL, PARAM, LOCAL};
     std::string name;
     int scope;
+    int value;
+    int paramNo;
+    bool sysy;
+    bool constant;
+    int* arrayValue;
+    bool initial;
     Operand *addr;  // The address of the identifier.
     // You can add any field you need here.
 
 public:
-    IdentifierSymbolEntry(Type *type, std::string name, int scope);
+    IdentifierSymbolEntry(Type *type, std::string name, int scope, int paramNo = -1, bool sysy = false);
     virtual ~IdentifierSymbolEntry() {};
     std::string toStr();
     bool isGlobal() const {return scope == GLOBAL;};
     bool isParam() const {return scope == PARAM;};
     bool isLocal() const {return scope >= LOCAL;};
     int getScope() const {return scope;};
+    void setConst() {constant = true;};
+    bool getConst() const {return constant;};
+    void setValue(int value);
+    int getValue() const {return value;};
+    void setArrayValue(int* arrayValue);
     void setAddr(Operand *addr) {this->addr = addr;};
     Operand* getAddr() {return addr;};
     // You can add any function you need here.
@@ -135,7 +148,7 @@ private:
 public:
     SymbolTable();
     SymbolTable(SymbolTable *prev);
-    void install(std::string name, SymbolEntry* entry);
+    bool install(std::string name, SymbolEntry* entry);
     SymbolEntry* lookup(std::string name);
     SymbolTable* getPrev() {return prev;};
     int getLevel() {return level;};

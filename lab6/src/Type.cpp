@@ -4,10 +4,12 @@
 IntType TypeSystem::commonInt = IntType(32);
 IntType TypeSystem::commonBool = IntType(1);
 VoidType TypeSystem::commonVoid = VoidType();
+IntType TypeSystem::commonConstInt = IntType(32, true);
 
 Type* TypeSystem::intType = &commonInt;
 Type* TypeSystem::voidType = &commonVoid;
 Type* TypeSystem::boolType = &commonBool;
+Type* TypeSystem::constIntType = &commonConstInt;
 
 std::string IntType::toStr()
 {
@@ -25,6 +27,12 @@ std::string FunctionType::toStr()
 {
     std::ostringstream buffer;
     buffer << returnType->toStr() << "()";
+    return buffer.str();
+}
+
+std::string ArrayType::toStr() {
+    std::ostringstream buffer;
+    buffer << "[" << ((ArrayType*)this)->getLength() << " ] ";
     return buffer.str();
 }
 
