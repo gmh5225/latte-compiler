@@ -22,6 +22,7 @@ public:
     bool isBool() const {return kind == BOOL;};
     bool isArray() const {return kind == ARRAY;};
     int getSize() const {return size;};
+    int getKind() const {return kind;};
 };
 
 class IntType : public Type

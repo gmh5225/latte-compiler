@@ -48,6 +48,7 @@ public:
     Operand* getOperand() {return dst;};
     SymbolEntry* getSymPtr() {return symbolEntry;};
     virtual int getValue() {return -1;};
+    virtual Type* getType() {return type;};
     void output(int level);
     void typeCheck();
     void genCode();

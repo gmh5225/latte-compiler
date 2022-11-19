@@ -207,6 +207,46 @@ void AssignStmt::genCode()
     new StoreInstruction(addr, src, bb);
 }
 
+void BlankStmt::genCode() {
+
+}
+
+void ExprStmt::genCode() {
+
+}
+
+void CallFunc::genCode() {
+
+}
+
+void ContinueStmt::genCode() {
+
+}
+
+void BreakStmt::genCode() {
+
+}
+
+void WhileStmt::genCode() {
+
+}
+
+void FuncParam::genCode() {
+
+}
+
+void ConstId::genCode() {
+
+}
+
+void ExprNode::genCode() {
+
+}
+
+void UnaryExpr::genCode() {
+
+}
+
 void Ast::typeCheck()
 {
     if(root != nullptr)
@@ -215,12 +255,30 @@ void Ast::typeCheck()
 
 void FunctionDef::typeCheck()
 {
-    // Todo
+    // 检查返回值类型
+    if(stmt) {
+        stmt->typeCheck();
+    }
+    else {
+        if(((FunctionType*)(se->getType()))->getRetType()!=TypeSystem::voidType) {
+            fprintf(stderr, "Function has no return!\n");
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 void BinaryExpr::typeCheck()
 {
-    // Todo
+    Type *type1 = expr1 -> getSymPtr() -> getType();
+    Type *type2 = expr2 -> getSymPtr() -> getType();
+    if(type1 != type2){
+        fprintf(stderr, "type %s and %s mismatch",
+                type1 -> toStr().c_str(), type2 -> toStr().c_str());
+        exit(EXIT_FAILURE);
+    }
+    symbolEntry -> setType(type1);
+    expr1 -> typeCheck();
+    expr2 -> typeCheck();
 }
 
 void Constant::typeCheck()
@@ -235,12 +293,19 @@ void Id::typeCheck()
 
 void IfStmt::typeCheck()
 {
-    // Todo
+    cond -> typeCheck();
+    if(thenStmt){
+        thenStmt -> typeCheck();
+    }
 }
 
 void IfElseStmt::typeCheck()
 {
-    // Todo
+    cond -> typeCheck();
+    if(thenStmt){
+        thenStmt -> typeCheck();
+    }
+    elseStmt -> typeCheck();
 }
 
 void CompoundStmt::typeCheck()
@@ -258,14 +323,92 @@ void DeclStmt::typeCheck()
     // Todo
 }
 
+void WhileStmt::typeCheck() {
+    if (stmt)
+        stmt->typeCheck();
+}
+
+void BreakStmt::typeCheck() {
+
+}
+
+void ContinueStmt::typeCheck() {
+
+}
+
+void BlankStmt::typeCheck() {
+
+}
+
+void ExprStmt::typeCheck() {
+
+}
+
 void ReturnStmt::typeCheck()
 {
-    // Todo
+    if(retValue) {
+        retValue -> typeCheck();
+    }
 }
 
 void AssignStmt::typeCheck()
 {
-    // Todo
+    // 赋值语句检查左值是否可以被赋值，右值是否为整型（后续要加上浮点数的判断！）
+    Type* type = ((Id*)lval)->getType();
+    SymbolEntry* se = lval->getSymPtr();
+    if (type->isInt()) {
+        if (((IntType*)type)->isConst()) {
+            fprintf(stderr, "Cannot assign constant type with \'%s\' type \'%s\'\n", ((IdentifierSymbolEntry*)se)->toStr().c_str(), type->toStr().c_str());
+            exit(EXIT_FAILURE);
+        }
+    } 
+    else if (type->isArray()) {
+        fprintf(stderr, "Cannot assign array type with variable");
+        exit(EXIT_FAILURE);
+    }
+    if (!expr->getType()->isInt()) {
+        fprintf(stderr, "Cannot assign int variable with type \'%s\'\n", expr->getType()->toStr().c_str());
+        exit(EXIT_FAILURE);
+    }
+}
+
+void CallFunc::typeCheck() {
+    // 检查参数类型、数量是否正确
+    if (symbolEntry) {
+        std::vector<Type*> params = ((FunctionType*)symbolEntry->getType())->getParamsType();
+        ExprNode* temp = param;
+        for (auto it = params.begin(); it != params.end(); it++) {
+            if (temp == nullptr) {
+                fprintf(stderr, "Not enough arguments for function %s %s\n", symbolEntry->toStr().c_str(), type->toStr().c_str());
+                exit(EXIT_FAILURE);
+            } 
+            else if ((*it)->getKind() != temp->getType()->getKind()) {
+                fprintf(stderr, "Argument's type %s doesn't match with %s\n", temp->getType()->toStr().c_str(), (*it)->toStr().c_str());
+                exit(EXIT_FAILURE);
+            }
+            temp = (ExprNode*)(temp->getNext());
+        }
+        if (temp != nullptr) {
+            fprintf(stderr, "Too many arguments for function %s %s\n", symbolEntry->toStr().c_str(), type->toStr().c_str());
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+void FuncParam::typeCheck() {
+
+}
+
+void ConstId::typeCheck() {
+
+}
+
+void ExprNode::typeCheck() {
+
+}
+
+void UnaryExpr::typeCheck() {
+    
 }
 
 void BinaryExpr::output(int level)
@@ -528,6 +671,13 @@ CallFunc::CallFunc(SymbolEntry* se, ExprNode* param) : ExprNode(se), param(param
             break;
         }
         s = s->getNext();
+    }
+    if (symbolEntry) {
+        this->type = ((FunctionType*)symbolEntry->getType())->getRetType();
+        if (this->type != TypeSystem::voidType) {
+            SymbolEntry* se = new TemporarySymbolEntry(this->type, SymbolTable::getLabel());
+            dst = new Operand(se);
+        }
     }
 }
 
