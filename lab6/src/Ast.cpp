@@ -61,13 +61,51 @@ void FunctionDef::genCode()
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);
 
-    stmt->genCode();
+    if (decl)
+        decl->genCode();
+    if (stmt)
+        stmt->genCode();
 
-    /**
-     * Construct control flow graph. You need do set successors and predecessors for each basic block.
-     * Todo
-    */
-   
+    for (auto block = func->begin(); block != func->end(); block++)
+    {
+        //获取该块的最后一条指令
+        Instruction *next = (*block)->begin();
+        Instruction *prev = (*block)->rbegin();
+        //从块中删除条件型语句
+        while (next != prev) {
+            if (next->isCond() || next->isUncond()) {
+                (*block)->remove(next);
+            }
+            next = next->getNext();
+        }
+        // 有条件跳转指令：加上前序和后继
+        if (prev->isCond()) {
+            BasicBlock *truebranch, *falsebranch;
+            truebranch = dynamic_cast<CondBrInstruction*>(prev)->getTrueBranch();
+            falsebranch = dynamic_cast<CondBrInstruction*>(prev)->getFalseBranch();
+            (*block)->addSucc(truebranch);
+            (*block)->addSucc(falsebranch);
+            truebranch->addPred(*block);
+            falsebranch->addPred(*block);
+        } 
+        // 无条件跳转指令：获取跳转的目标块
+        else if (prev->isUncond()) {
+            BasicBlock* dst = dynamic_cast<UncondBrInstruction*>(prev)->getBranch();
+            (*block)->addSucc(dst);
+            // 如果无条件跳转的目标块为空，插入return
+            dst->addPred(*block);
+            if (dst->empty()) {
+                if (((FunctionType*)(se->getType()))->getRetType() == TypeSystem::intType)
+                    new RetInstruction(new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)), dst);
+                else if (((FunctionType*)(se->getType()))->getRetType() == TypeSystem::voidType)
+                    new RetInstruction(nullptr, dst);
+            }
+        }
+        // 没有显示返回或者跳转的语句，插入空return
+        else if ((!prev->isRet())&&((FunctionType*)(se->getType()))->getRetType()==TypeSystem::voidType) {
+                new RetInstruction(nullptr, *block);
+        }
+    }
 }
 
 void BinaryExpr::genCode()
@@ -86,13 +124,51 @@ void BinaryExpr::genCode()
     }
     else if(op == OR)
     {
-        // Todo
+        BasicBlock* trueBB = new BasicBlock(func);  // 如果表达式结果为真，跳转到trueBB
+        expr1->genCode();
+        backPatch(expr1->falseList(), trueBB);      // expr1的falseList跳转到trueBB，也就是如果expr1为假，才继续判断expr2
+        builder->setInsertBB(trueBB);               // expr2的插入点为trueBB
+        expr2->genCode();
+        true_list = merge(expr1->trueList(), expr2->trueList());
+        false_list = expr2->falseList();
     }
-    else if(op >= LES && op <= GRA)
+    else if(op >= EQ && op <= LES)
     {
-        // Todo
+        expr1->genCode();
+        expr2->genCode();
+        Operand *src1 = expr1->getOperand();
+        Operand *src2 = expr2->getOperand();
+        int opcode;
+        switch (op) {
+        case EQ:
+            opcode = CmpInstruction::EQ;
+            break;
+        case GEQ:
+            opcode = CmpInstruction::GEQ;
+            break;
+        case LEQ:
+            opcode = CmpInstruction::LEQ;
+            break;
+        case NEQ:
+            opcode = CmpInstruction::NEQ;
+            break;
+        case GRA:
+            opcode = CmpInstruction::GRA;
+            break;
+        case LES:
+            opcode = CmpInstruction::LES;
+            break;
+        default:
+            break;
+        }
+        new CmpInstruction(opcode, dst, src1, src2, bb);
+        true_list = merge(expr1->trueList(), expr2->trueList());
+        false_list = merge(expr1->falseList(), expr2->falseList());
+        Instruction* temp = new CondBrInstruction(nullptr, nullptr, dst, bb);
+        this->trueList().push_back(temp);
+        this->falseList().push_back(temp);
     }
-    else if(op >= ADD && op <= SUB)
+    else if(op >= ADD && op <= MOD)
     {
         expr1->genCode();
         expr2->genCode();
@@ -106,6 +182,15 @@ void BinaryExpr::genCode()
             break;
         case SUB:
             opcode = BinaryInstruction::SUB;
+            break;
+        case MUL:
+            opcode = BinaryInstruction::MUL;
+            break;
+        case DIV:
+            opcode = BinaryInstruction::DIV;
+            break;
+        case MOD:
+            opcode = BinaryInstruction::MOD;
             break;
         }
         new BinaryInstruction(opcode, dst, src1, src2, bb);
@@ -147,17 +232,40 @@ void IfStmt::genCode()
 
 void IfElseStmt::genCode()
 {
-    // Todo
+    Function *func;
+    BasicBlock *then_bb, *else_bb, *end_bb;
+
+    func = builder->getInsertBB()->getParent();
+    then_bb = new BasicBlock(func);
+    end_bb = new BasicBlock(func);
+    else_bb = new BasicBlock(func);
+
+    cond->genCode();
+    backPatch(cond->trueList(), then_bb);
+    backPatch(cond->falseList(), else_bb);
+
+    builder->setInsertBB(then_bb);
+    thenStmt->genCode();
+    then_bb = builder->getInsertBB();
+    new UncondBrInstruction(end_bb, then_bb);
+
+    builder->setInsertBB(else_bb);
+    elseStmt->genCode();
+    else_bb = builder->getInsertBB();
+    new UncondBrInstruction(end_bb, else_bb);
+
+    builder->setInsertBB(end_bb);
 }
 
 void CompoundStmt::genCode()
 {
-    // Todo
+    stmt->genCode();
 }
 
 void SeqNode::genCode()
 {
-    // Todo
+    stmt1->genCode();
+    stmt2->genCode();
 }
 
 void DeclStmt::genCode()
@@ -191,7 +299,10 @@ void DeclStmt::genCode()
 
 void ReturnStmt::genCode()
 {
-    // Todo
+    BasicBlock *bb=builder->getInsertBB();
+    retValue->genCode();
+    Operand *src=retValue->getOperand();
+    new RetInstruction(src, bb);
 }
 
 void AssignStmt::genCode()
@@ -212,11 +323,19 @@ void BlankStmt::genCode() {
 }
 
 void ExprStmt::genCode() {
-
+    expr->genCode();
 }
 
 void CallFunc::genCode() {
-
+    std::vector<Operand*> operands;
+    ExprNode* temp = param;
+    while (temp) {
+        temp->genCode();
+        operands.push_back(temp->getOperand());
+        temp = ((ExprNode*)temp->getNext());
+    }
+    BasicBlock* bb = builder->getInsertBB();
+    new CallInstruction(dst, symbolEntry, operands, bb);
 }
 
 void ContinueStmt::genCode() {
@@ -279,6 +398,11 @@ void BinaryExpr::typeCheck()
     symbolEntry -> setType(type1);
     expr1 -> typeCheck();
     expr2 -> typeCheck();
+    // 隐式转换
+    if (op >= BinaryExpr::AND && op <= BinaryExpr::LES) 
+        type = TypeSystem::boolType;
+    else
+        type = TypeSystem::intType;
 }
 
 void Constant::typeCheck()
@@ -436,12 +560,6 @@ void BinaryExpr::output(int level)
             break;
         case OR:
             op_str = "||";
-            break;
-        case NOT:
-            op_str = "!";
-            break;
-        case MINUS:
-            op_str = "-";
             break;
         case EQ:
             op_str = "==";

@@ -15,6 +15,7 @@ public:
     BasicBlock *getParent();
     bool isUncond() const {return instType == UNCOND;};
     bool isCond() const {return instType == COND;};
+    bool isRet() const { return instType == RET; };
     void setParent(BasicBlock *);
     void setNext(Instruction *);
     void setPrev(Instruction *);
@@ -28,7 +29,7 @@ protected:
     Instruction *next;
     BasicBlock *parent;
     std::vector<Operand*> operands;
-    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA};
+    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA, CALL};
 };
 
 // meaningless instruction, used as the head node of the instruction list.
@@ -71,7 +72,7 @@ public:
     BinaryInstruction(unsigned opcode, Operand *dst, Operand *src1, Operand *src2, BasicBlock *insert_bb = nullptr);
     ~BinaryInstruction();
     void output() const;
-    enum {SUB, ADD, AND, OR};
+    enum {ADD, SUB, MUL, DIV, MOD, AND, OR};
 };
 
 class CmpInstruction : public Instruction
@@ -80,7 +81,7 @@ public:
     CmpInstruction(unsigned opcode, Operand *dst, Operand *src1, Operand *src2, BasicBlock *insert_bb = nullptr);
     ~CmpInstruction();
     void output() const;
-    enum {E, NE, L, GE, G, LE};
+    enum {EQ, GEQ, LEQ, NEQ, GRA, LES};
 };
 
 // unconditional branch
@@ -116,6 +117,16 @@ class RetInstruction : public Instruction
 public:
     RetInstruction(Operand *src, BasicBlock *insert_bb = nullptr);
     ~RetInstruction();
+    void output() const;
+};
+
+class CallInstruction : public Instruction {
+private:
+    SymbolEntry* func;
+    Operand* dst;
+public:
+    CallInstruction(Operand* dst, SymbolEntry* func, std::vector<Operand*> params, BasicBlock* insert_bb = nullptr);
+    ~CallInstruction();
     void output() const;
 };
 
