@@ -60,7 +60,6 @@ void FunctionDef::genCode()
     BasicBlock *entry = func->getEntry();
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);
-
     if (decl)
         decl->genCode();
     if (stmt)
@@ -532,7 +531,10 @@ void ExprNode::typeCheck() {
 }
 
 void UnaryExpr::typeCheck() {
-    
+    std::string op_str = op == UnaryExpr::NOT ? "!" : "-";
+    if (expr->getType()->isVoid()) {
+        fprintf(stderr, "invalid operand of type \'void\' to unary \'opeartor%s\'\n", op_str.c_str());
+    }
 }
 
 void BinaryExpr::output(int level)
@@ -774,6 +776,7 @@ void BlankStmt::output(int level) {
 }
 
 CallFunc::CallFunc(SymbolEntry* se, ExprNode* param) : ExprNode(se), param(param) {
+    dst = nullptr;
     SymbolEntry* s = se;
     int paramNo = 0;
     ExprNode* temp = param;
@@ -800,12 +803,13 @@ CallFunc::CallFunc(SymbolEntry* se, ExprNode* param) : ExprNode(se), param(param
 }
 
 UnaryExpr::UnaryExpr(SymbolEntry* se, int op, ExprNode* expr): ExprNode(se), op(op), expr(expr) {
-    std::string op_str = op == UnaryExpr::NOT ? "!" : "-";
     if (op == UnaryExpr::NOT) {
         type = TypeSystem::intType;
+        dst = new Operand(se);
     }
     else if (op == UnaryExpr::SUB) {
         type = TypeSystem::intType;
+        dst = new Operand(se);
     }
 };
 
