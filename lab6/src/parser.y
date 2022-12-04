@@ -371,8 +371,8 @@ VarDef
         identifiers->install($1, se);
         ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
         $$ = new DeclStmt(new Id(se), $3);
-        se = identifiers->lookup($1);
-        $$ = new AssignStmt(new Id(se), $3);
+        //se = identifiers->lookup($1);
+        //$$ = new AssignStmt(new Id(se), $3);
         delete []$1;
     }
     | ID ArrayIndex {
@@ -397,8 +397,8 @@ ConstDef
          identifiers->install($1, se);
         ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
         $$ = new DeclStmt(new Id(se), $3);
-        se = identifiers->lookup($1);
-        $$ = new AssignStmt(new Id(se), $3);
+        //se = identifiers->lookup($1);
+        //$$ = new AssignStmt(new Id(se), $3);
         delete []$1;
     }
     ;

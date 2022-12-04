@@ -11,11 +11,13 @@ class Unit
 
 private:
     std::vector<Function *> func_list;
+    std::vector<SymbolEntry*> global_list;
 public:
     Unit() = default;
     ~Unit() ;
     void insertFunc(Function *);
     void removeFunc(Function *);
+    void insertGlobal(SymbolEntry*);
     void output() const;
     iterator begin() { return func_list.begin(); };
     iterator end() { return func_list.end(); };

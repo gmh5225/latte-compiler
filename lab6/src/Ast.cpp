@@ -6,7 +6,7 @@
 #include <string>
 #include <stdbool.h>
 #include "Type.h"
-
+extern Unit unit;
 extern FILE *yyout;
 int Node::counter = 0;
 IRBuilder* Node::builder = nullptr;
@@ -64,32 +64,34 @@ void FunctionDef::genCode()
         decl->genCode();
     if (stmt)
         stmt->genCode();
-
-    for (auto block = func->begin(); block != func->end(); block++)
-    {
+    for (auto block = func->begin(); block != func->end(); block++) {
         //获取该块的最后一条指令
-        Instruction *next = (*block)->begin();
-        Instruction *prev = (*block)->rbegin();
+        Instruction *first = (*block)->begin();
+        Instruction *last = (*block)->rbegin();
         //从块中删除条件型语句
-        while (next != prev) {
-            if (next->isCond() || next->isUncond()) {
-                (*block)->remove(next);
+        while (first != last) {
+            if (first->isCond() || first->isUncond()) {
+                (*block)->remove(first);
             }
-            next = next->getNext();
+            first = first->getNext();
         }
         // 有条件跳转指令：加上前序和后继
-        if (prev->isCond()) {
+        if (last->isCond()) {
             BasicBlock *truebranch, *falsebranch;
-            truebranch = dynamic_cast<CondBrInstruction*>(prev)->getTrueBranch();
-            falsebranch = dynamic_cast<CondBrInstruction*>(prev)->getFalseBranch();
-            (*block)->addSucc(truebranch);
-            (*block)->addSucc(falsebranch);
-            truebranch->addPred(*block);
-            falsebranch->addPred(*block);
+            truebranch = dynamic_cast<CondBrInstruction*>(last)->getTrueBranch();
+            falsebranch = dynamic_cast<CondBrInstruction*>(last)->getFalseBranch();
+            if(truebranch) {
+                (*block)->addSucc(truebranch);
+                truebranch->addPred(*block);
+            }
+            if(falsebranch) {
+                (*block)->addSucc(falsebranch);
+                falsebranch->addPred(*block);
+            } 
         } 
         // 无条件跳转指令：获取跳转的目标块
-        else if (prev->isUncond()) {
-            BasicBlock* dst = dynamic_cast<UncondBrInstruction*>(prev)->getBranch();
+        else if (last->isUncond()) {
+            BasicBlock* dst = dynamic_cast<UncondBrInstruction*>(last)->getBranch();
             (*block)->addSucc(dst);
             // 如果无条件跳转的目标块为空，插入return
             dst->addPred(*block);
@@ -99,10 +101,12 @@ void FunctionDef::genCode()
                 else if (((FunctionType*)(se->getType()))->getRetType() == TypeSystem::voidType)
                     new RetInstruction(nullptr, dst);
             }
+            
         }
         // 没有显示返回或者跳转的语句，插入空return
-        else if ((!prev->isRet())&&((FunctionType*)(se->getType()))->getRetType()==TypeSystem::voidType) {
-                new RetInstruction(nullptr, *block);
+        else if ((!last->isRet())&&((FunctionType*)(se->getType()))->getRetType()==TypeSystem::voidType) {
+            new RetInstruction(nullptr, *block);
+            
         }
     }
 }
@@ -161,11 +165,12 @@ void BinaryExpr::genCode()
             break;
         }
         new CmpInstruction(opcode, dst, src1, src2, bb);
-        true_list = merge(expr1->trueList(), expr2->trueList());
-        false_list = merge(expr1->falseList(), expr2->falseList());
-        Instruction* temp = new CondBrInstruction(nullptr, nullptr, dst, bb);
-        this->trueList().push_back(temp);
-        this->falseList().push_back(temp);
+        BasicBlock *truebb, *falsebb, *tempbb;
+        truebb = new BasicBlock(func);
+        falsebb = new BasicBlock(func);
+        tempbb = new BasicBlock(func);
+        true_list.push_back(new CondBrInstruction(truebb, tempbb, dst, bb));
+        false_list.push_back(new UncondBrInstruction(falsebb, tempbb));
     }
     else if(op >= ADD && op <= MOD)
     {
@@ -278,6 +283,7 @@ void DeclStmt::genCode()
         addr_se->setType(new PointerType(se->getType()));
         addr = new Operand(addr_se);
         se->setAddr(addr);
+        unit.insertGlobal(se);
     }
     else if(se->isLocal())
     {
@@ -293,6 +299,35 @@ void DeclStmt::genCode()
         alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
         entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
         se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+    }
+    else if(se->isParam()) {
+        Function* func = builder->getInsertBB()->getParent();
+        BasicBlock* entry = func->getEntry();
+        Instruction* alloca;
+        Operand* addr;
+        SymbolEntry* addr_se;
+        Type* type;
+        type = new PointerType(se->getType());
+        addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+        addr = new Operand(addr_se);
+        alloca = new AllocaInstruction(addr, se);
+        entry->insertFront(alloca); 
+        // 如果是参数，需要store
+        Operand *src = se->getAddr();
+        BasicBlock* bb = builder->getInsertBB();
+        new StoreInstruction(addr, src, bb);
+        se->setAddr(addr);  
+    }
+    // 定义时还声明了初始值，需要store
+    if(expr) {
+        BasicBlock *bb = builder->getInsertBB();
+        expr->genCode();
+        Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(id->getSymPtr())->getAddr();
+        Operand *src = expr->getOperand();
+        new StoreInstruction(addr, src, bb);
+    }
+    if (this->getNext()) {
+        this->getNext()->genCode();
     }
 }
 
@@ -338,15 +373,47 @@ void CallFunc::genCode() {
 }
 
 void ContinueStmt::genCode() {
-
+    Function* func = builder->getInsertBB()->getParent();
+    BasicBlock* bb = builder->getInsertBB();
+    new UncondBrInstruction(((WhileStmt*)whileStmt)->get_cond_bb(), bb);
+    BasicBlock* continue_next_bb = new BasicBlock(func);
+    builder->setInsertBB(continue_next_bb);
 }
 
 void BreakStmt::genCode() {
-
+    Function* func = builder->getInsertBB()->getParent();
+    BasicBlock* bb = builder->getInsertBB();
+    new UncondBrInstruction(((WhileStmt*)whileStmt)->get_end_bb(), bb);
+    BasicBlock* break_next_bb = new BasicBlock(func);
+    builder->setInsertBB(break_next_bb);
 }
 
 void WhileStmt::genCode() {
+    Function* func;
+    BasicBlock *cond_bb, *while_bb, *end_bb, *bb;
+    bb = builder->getInsertBB();
+    func = builder->getInsertBB()->getParent();
+    cond_bb = new BasicBlock(func);
+    while_bb = new BasicBlock(func);
+    end_bb = new BasicBlock(func);
 
+    this->cond_bb = cond_bb;
+    this->end_bb = end_bb;
+
+    new UncondBrInstruction(cond_bb, bb);
+
+    builder->setInsertBB(cond_bb);
+    cond->genCode();
+    backPatch(cond->trueList(), while_bb);
+    backPatch(cond->falseList(), end_bb);
+    
+    builder->setInsertBB(while_bb);
+    stmt->genCode();
+
+    while_bb = builder->getInsertBB();
+    new UncondBrInstruction(cond_bb, while_bb);
+
+    builder->setInsertBB(end_bb);
 }
 
 void FuncParam::genCode() {
@@ -358,11 +425,30 @@ void ConstId::genCode() {
 }
 
 void ExprNode::genCode() {
-
+    
 }
 
 void UnaryExpr::genCode() {
-
+    expr->genCode();
+    if (op == NOT) {
+        BasicBlock* bb = builder->getInsertBB();
+        Operand* src = expr->getOperand();
+        // 如果not后面是一个i32 就要先和0比较大小 然后对于结果进行取反
+        if (expr->getType()->getSize() == 32) {
+            Operand* temp = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
+            new CmpInstruction(CmpInstruction::NEQ, temp, src, new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)), bb);
+            src = temp;
+        }
+        new XorInstruction(dst, src, bb);
+    } 
+    //-x的情况下 就是用0-x  但是要判断x是否为i1类型 因为sub要求两边是i32
+    else if (op == SUB) {
+        Operand* src2;
+        BasicBlock* bb = builder->getInsertBB();
+        Operand* src1 = new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0));
+        src2 = expr->getOperand();
+        new BinaryInstruction(BinaryInstruction::SUB, dst, src1, src2, bb);
+    }
 }
 
 void Ast::typeCheck()

@@ -213,12 +213,16 @@ class WhileStmt : public StmtNode {
 private:
     ExprNode *cond;
     StmtNode *stmt;
+    BasicBlock *cond_bb;
+    BasicBlock *end_bb;
 public:
     WhileStmt(ExprNode* cond, StmtNode* stmt=nullptr) : cond(cond), stmt(stmt) {};
     void output(int level);
     void setStmt(StmtNode* stmt){this->stmt = stmt;};
     void typeCheck();
     void genCode();
+    BasicBlock* get_cond_bb(){return this->cond_bb;};
+    BasicBlock* get_end_bb(){return this->end_bb;};
 };
 
 class BreakStmt : public StmtNode {

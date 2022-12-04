@@ -317,7 +317,6 @@ void StoreInstruction::output() const
     std::string src = operands[1]->toStr();
     std::string dst_type = operands[0]->getType()->toStr();
     std::string src_type = operands[1]->getType()->toStr();
-
     fprintf(yyout, "  store %s %s, %s %s, align 4\n", src_type.c_str(), src.c_str(), dst_type.c_str(), dst.c_str());
 }
 
@@ -351,4 +350,28 @@ CallInstruction::~CallInstruction() {
         delete operands[0];
     for (long unsigned int i = 1; i < operands.size(); i++)
         operands[i]->removeUse(this);
+}
+
+XorInstruction::XorInstruction(Operand* dst,
+                               Operand* src,
+                               BasicBlock* insert_bb)
+    : Instruction(XOR, insert_bb) {
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+//将src和true异或 结果存到dst
+void XorInstruction::output() const {
+    Operand* dst = operands[0];
+    Operand* src = operands[1];
+    fprintf(yyout, "  %s = xor %s %s, true\n", dst->toStr().c_str(), src->getType()->toStr().c_str(), src->toStr().c_str());
+}
+
+XorInstruction::~XorInstruction() {
+    operands[0]->setDef(nullptr);
+    if (operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
 }
