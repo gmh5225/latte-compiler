@@ -13,7 +13,7 @@ protected:
     enum {INT, VOID, FUNC, PTR, BOOL, ARRAY};
     int size;
 public:
-    Type(int kind) : kind(kind) {};
+    Type(int kind, int size = 0) : kind(kind), size(size){};
     virtual ~Type() {};
     virtual std::string toStr() = 0;
     bool isInt() const {return kind == INT;};
@@ -28,10 +28,9 @@ public:
 class IntType : public Type
 {
 private:
-    int size;
     bool constant;
 public:
-    IntType(int size, bool constant = false) : Type(Type::INT), size(size), constant(constant){};
+    IntType(int size, bool constant = false) : Type(Type::INT, size), constant(constant){};
     std::string toStr();
     bool isConst() const {return constant;};
 };

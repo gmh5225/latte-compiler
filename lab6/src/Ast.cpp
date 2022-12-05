@@ -106,7 +106,6 @@ void FunctionDef::genCode()
         // 没有显示返回或者跳转的语句，插入空return
         else if ((!last->isRet())&&((FunctionType*)(se->getType()))->getRetType()==TypeSystem::voidType) {
             new RetInstruction(nullptr, *block);
-            
         }
     }
 }
@@ -433,20 +432,17 @@ void UnaryExpr::genCode() {
     if (op == NOT) {
         BasicBlock* bb = builder->getInsertBB();
         Operand* src = expr->getOperand();
-        // 如果not后面是一个i32 就要先和0比较大小 然后对于结果进行取反
-        if (expr->getType()->getSize() == 32) {
-            Operand* temp = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
-            new CmpInstruction(CmpInstruction::NEQ, temp, src, new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)), bb);
-            src = temp;
-        }
+        // 先和0比较大小 然后对于结果进行取反
+        Operand* temp = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
+        new CmpInstruction(CmpInstruction::NEQ, temp, src, new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)), bb);
+        src = temp;
         new XorInstruction(dst, src, bb);
     } 
-    //-x的情况下 就是用0-x  但是要判断x是否为i1类型 因为sub要求两边是i32
+    // -x的情况下，用0-x 
     else if (op == SUB) {
-        Operand* src2;
         BasicBlock* bb = builder->getInsertBB();
         Operand* src1 = new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0));
-        src2 = expr->getOperand();
+        Operand* src2 = expr->getOperand();
         new BinaryInstruction(BinaryInstruction::SUB, dst, src1, src2, bb);
     }
 }
@@ -617,7 +613,13 @@ void ExprNode::typeCheck() {
 }
 
 void UnaryExpr::typeCheck() {
-    std::string op_str = op == UnaryExpr::NOT ? "!" : "-";
+    std::string op_str;
+    if (op == UnaryExpr::NOT) {
+        op_str = "!";
+    }
+    else {
+        op_str = "-";
+    }
     if (expr->getType()->isVoid()) {
         fprintf(stderr, "invalid operand of type \'void\' to unary \'opeartor%s\'\n", op_str.c_str());
     }
@@ -889,14 +891,8 @@ CallFunc::CallFunc(SymbolEntry* se, ExprNode* param) : ExprNode(se), param(param
 }
 
 UnaryExpr::UnaryExpr(SymbolEntry* se, int op, ExprNode* expr): ExprNode(se), op(op), expr(expr) {
-    if (op == UnaryExpr::NOT) {
-        type = TypeSystem::intType;
-        dst = new Operand(se);
-    }
-    else if (op == UnaryExpr::SUB) {
-        type = TypeSystem::intType;
-        dst = new Operand(se);
-    }
+    type = TypeSystem::intType;
+    dst = new Operand(se);
 };
 
 int BinaryExpr::getValue() {

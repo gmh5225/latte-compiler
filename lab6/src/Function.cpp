@@ -13,6 +13,7 @@ Function::Function(Unit *u, SymbolEntry *s)
     parent = u;
 }
 
+/*
 Function::~Function()
 {
     auto delete_list = block_list;
@@ -20,6 +21,7 @@ Function::~Function()
         delete i;
     parent->removeFunc(this);
 }
+*/
 
 // remove the basicblock bb from its block_list.
 void Function::remove(BasicBlock *bb)

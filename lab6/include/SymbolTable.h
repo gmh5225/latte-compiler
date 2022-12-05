@@ -103,6 +103,7 @@ public:
     void setArrayValue(int* arrayValue);
     void setAddr(Operand *addr) {this->addr = addr;};
     Operand* getAddr() {return addr;};
+    bool isSysy() const {return sysy;};
     // You can add any function you need here.
 };
 
