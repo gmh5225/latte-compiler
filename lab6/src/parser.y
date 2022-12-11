@@ -447,6 +447,7 @@ FuncParam
         SymbolEntry* se;
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel(), paramNo++);
         identifiers->install($2, se);
+        ((IdentifierSymbolEntry*)se)->setAddr(new Operand(se));
         $$ = new DeclStmt(new Id(se));
     }
     | Type ID FuncArrayIndex {
@@ -455,6 +456,7 @@ FuncParam
         Type* arr = new ArrayType(TypeSystem::intType, temp->getValue());
         se = new IdentifierSymbolEntry(arr, $2, identifiers->getLevel(), paramNo++);
         identifiers->install($2, se);
+        ((IdentifierSymbolEntry*)se)->setAddr(new Operand(se));
         $$ = new DeclStmt(new Id(se));
         delete []$2;
     }
