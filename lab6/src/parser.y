@@ -74,12 +74,20 @@ LVal
     ID {
         SymbolEntry* se;
         se = identifiers->lookup($1);
+        if(se==nullptr) {
+            fprintf(stderr, "Variable \"%s\" has been used before definition\n", (char*)$1);
+            exit(EXIT_FAILURE);
+        }
         $$ = new Id(se);
         delete []$1;
     }
     | ID ArrayIndex {
         SymbolEntry* se;
         se = identifiers->lookup($1);
+       if(se==nullptr) {
+            fprintf(stderr, "Variable \"%s\" has been used before definition\n", (char*)$1);
+            exit(EXIT_FAILURE);
+        }
         $$ = new Id(se, $2);
         delete []$1;
     }
@@ -180,11 +188,19 @@ PrimaryExp
     | ID LPAREN FuncParamsCall RPAREN {
         SymbolEntry* se;
         se = identifiers->lookup($1);
+        if(se==nullptr) {
+            fprintf(stderr, "Function \"%s\" has been called before definition\n", (char*)$1);
+            exit(EXIT_FAILURE);
+        }
         $$ = new CallFunc(se, $3);
     }
     | ID LPAREN RPAREN {
         SymbolEntry* se;
         se = identifiers->lookup($1);
+        if(se==nullptr) {
+            fprintf(stderr, "Function \"%s\" has been called before definition\n", (char*)$1);
+            exit(EXIT_FAILURE);
+        }
         $$ = new CallFunc(se);
     }
     ;
@@ -360,7 +376,10 @@ VarDef
     : ID {
         SymbolEntry* se;
         se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
-        identifiers->install($1, se);
+        if(!identifiers->install($1, se)){
+            fprintf(stderr, "Variable \"%s\" redefinition\n", (char*)$1);
+            exit(EXIT_FAILURE);
+        }
         $$ = new DeclStmt(new Id(se));
         delete []$1;
     }
@@ -368,7 +387,10 @@ VarDef
     | ID ASSIGN InitVal {
         SymbolEntry* se;
         se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
-        identifiers->install($1, se);
+        if(!identifiers->install($1, se)){
+            fprintf(stderr, "Variable \"%s\" redefinition\n", (char*)$1);
+            exit(EXIT_FAILURE);
+        }
         ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
         $$ = new DeclStmt(new Id(se), $3);
         //se = identifiers->lookup($1);
@@ -383,7 +405,10 @@ VarDef
         se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
         int *p = new int[type->getSize()];//设置整型空间 即长度*大小
         ((IdentifierSymbolEntry*)se)->setArrayValue(p);
-        identifiers->install($1, se);
+        if(!identifiers->install($1, se)){
+            fprintf(stderr, "Variable \"%s\" redefinition\n", (char*)$1);
+            exit(EXIT_FAILURE);
+        }
         $$ = new DeclStmt(new Id(se));
         delete []$1;
     }

@@ -10,6 +10,8 @@ extern Unit unit;
 extern FILE *yyout;
 int Node::counter = 0;
 IRBuilder* Node::builder = nullptr;
+Type *retType;
+bool retStmt=false;
 
 Node::Node()
 {
@@ -455,33 +457,56 @@ void Ast::typeCheck()
 
 void FunctionDef::typeCheck()
 {
-    // 检查返回值类型
+    retType=((FunctionType*)(se->getType()))->getRetType(); // 正确的返回值类型，returnStmt的类型检查中使用
+    retStmt=false;  // 记录是否有return语句
     if(stmt) {
         stmt->typeCheck();
-    }
-    else {
-        if(((FunctionType*)(se->getType()))->getRetType()!=TypeSystem::voidType) {
-            fprintf(stderr, "Function has no return!\n");
+        if(!retStmt&&retType!=TypeSystem::voidType) {
+            fprintf(stderr, "Non-void function has no return!\n");
             exit(EXIT_FAILURE);
         }
     }
+    // 如果函数定义中为空，检查是否为void函数
+    else {
+        if(retType!=TypeSystem::voidType) {
+            fprintf(stderr, "Non-void function has no return!\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    
 }
 
 void BinaryExpr::typeCheck()
 {
+    expr1 -> typeCheck();
+    expr2 -> typeCheck();
     Type *type1 = expr1 -> getSymPtr() -> getType();
     Type *type2 = expr2 -> getSymPtr() -> getType();
-    if(type1 != type2){
-        fprintf(stderr, "type %s and %s mismatch",
-                type1 -> toStr().c_str(), type2 -> toStr().c_str());
+    if(type1 -> isFunc()) {
+        type1 = ((FunctionType*)type1)->getRetType();
+        if(type1 -> isVoid()) {
+            fprintf(stderr, "The operand's type cannnt be void\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    if(type2 -> isFunc()) {
+        type2 = ((FunctionType*)type2)->getRetType();
+        if(type2 -> isVoid()) {
+            fprintf(stderr, "The operand's type cannnt be void\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    if((type1->isArray()|type1->isInt())&&(type2->isArray()|type2->isInt()));
+    else if(type1->getKind() != type2->getKind()){
+        fprintf(stderr, "type %s and %s do not match\n", type1 -> toStr().c_str(), type2 -> toStr().c_str());
         exit(EXIT_FAILURE);
     }
     symbolEntry -> setType(type1);
-    expr1 -> typeCheck();
-    expr2 -> typeCheck();
     // 隐式转换
-    if (op >= BinaryExpr::AND && op <= BinaryExpr::LES) 
+    if (op >= BinaryExpr::AND && op <= BinaryExpr::LES) {
+        fprintf(stderr, "Implicit conversion from int to bool\n");
         type = TypeSystem::boolType;
+    }
     else
         type = TypeSystem::intType;
 }
@@ -516,20 +541,35 @@ void IfElseStmt::typeCheck()
 void CompoundStmt::typeCheck()
 {
     // Todo
+    if(stmt) {
+        stmt->typeCheck();
+    }
 }
 
 void SeqNode::typeCheck()
 {
     // Todo
+    if(stmt1) {
+        stmt1->typeCheck();
+    }
+    if(stmt2) {
+        stmt2->typeCheck();
+    }
 }
 
 void DeclStmt::typeCheck()
 {
     // Todo
+    id->typeCheck();
+    if(expr) {
+        expr->typeCheck();
+    }
 }
 
 void WhileStmt::typeCheck() {
-    if (stmt)
+    if(cond)
+        cond->typeCheck();
+    if(stmt)
         stmt->typeCheck();
 }
 
@@ -551,26 +591,31 @@ void ExprStmt::typeCheck() {
 
 void ReturnStmt::typeCheck()
 {
+    retStmt=true;
     if(retValue) {
-        retValue -> typeCheck();
+        retValue->typeCheck();
+        if(retValue->getType()->getKind()!=retType->getKind()) {
+            fprintf(stderr, "The return value's type \'%s\' and the function's type \'%s\' do not match\n",
+                retValue->getType()->toStr().c_str(), retType->toStr().c_str());
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
 void AssignStmt::typeCheck()
 {
+    lval->typeCheck();
+    expr->typeCheck();
+    // 检查赋值之前是否先定义了的代码写在parsey.y的LVal处
+    SymbolEntry* se = lval->getSymPtr();
     // 赋值语句检查左值是否可以被赋值，右值是否为整型（后续要加上浮点数的判断！）
     Type* type = ((Id*)lval)->getType();
-    SymbolEntry* se = lval->getSymPtr();
     if (type->isInt()) {
         if (((IntType*)type)->isConst()) {
             fprintf(stderr, "Cannot assign constant type with \'%s\' type \'%s\'\n", ((IdentifierSymbolEntry*)se)->toStr().c_str(), type->toStr().c_str());
             exit(EXIT_FAILURE);
         }
     } 
-    else if (type->isArray()) {
-        fprintf(stderr, "Cannot assign array type with variable");
-        exit(EXIT_FAILURE);
-    }
     if (!expr->getType()->isInt()) {
         fprintf(stderr, "Cannot assign int variable with type \'%s\'\n", expr->getType()->toStr().c_str());
         exit(EXIT_FAILURE);
@@ -580,14 +625,15 @@ void AssignStmt::typeCheck()
 void CallFunc::typeCheck() {
     // 检查参数类型、数量是否正确
     if (symbolEntry) {
-        std::vector<Type*> params = ((FunctionType*)symbolEntry->getType())->getParamsType();
+        std::vector<Type*> params = ((FunctionType*)(symbolEntry->getType()))->getParamsType();
         ExprNode* temp = param;
         for (auto it = params.begin(); it != params.end(); it++) {
             if (temp == nullptr) {
                 fprintf(stderr, "Not enough arguments for function %s %s\n", symbolEntry->toStr().c_str(), type->toStr().c_str());
                 exit(EXIT_FAILURE);
             } 
-            else if ((*it)->getKind() != temp->getType()->getKind()) {
+            temp->typeCheck();
+            if ((*it)->getKind() != temp->getType()->getKind()) {
                 fprintf(stderr, "Argument's type %s doesn't match with %s\n", temp->getType()->toStr().c_str(), (*it)->toStr().c_str());
                 exit(EXIT_FAILURE);
             }
@@ -613,6 +659,7 @@ void ExprNode::typeCheck() {
 }
 
 void UnaryExpr::typeCheck() {
+    expr->typeCheck();
     std::string op_str;
     if (op == UnaryExpr::NOT) {
         op_str = "!";
@@ -621,7 +668,8 @@ void UnaryExpr::typeCheck() {
         op_str = "-";
     }
     if (expr->getType()->isVoid()) {
-        fprintf(stderr, "invalid operand of type \'void\' to unary \'opeartor%s\'\n", op_str.c_str());
+        fprintf(stderr, "Invalid operand of type \'void\' to unary \'opeartor%s\'\n", op_str.c_str());
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -962,3 +1010,8 @@ int Constant::getValue() {
 int Id::getValue() {
     return ((IdentifierSymbolEntry*)symbolEntry)->getValue();
 }
+
+Constant::Constant(SymbolEntry *se) : ExprNode(se){
+    dst = new Operand(se);
+    type = TypeSystem::intType;
+};

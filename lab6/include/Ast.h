@@ -61,7 +61,8 @@ private:
     ExprNode *expr1, *expr2;
 public:
     enum {ADD, SUB, MUL, DIV, MOD, AND, OR, EQ, GEQ, LEQ, NEQ, GRA, LES};
-    BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){dst = new Operand(se);};
+    BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) 
+    : ExprNode(se), op(op), expr1(expr1), expr2(expr2) {dst = new Operand(se);};
     int getValue();
     void output(int level);
     void typeCheck();
@@ -87,7 +88,7 @@ public:
 class Constant : public ExprNode
 {
 public:
-    Constant(SymbolEntry *se) : ExprNode(se){dst = new Operand(se);};
+    Constant(SymbolEntry *se);
     int getValue();
     void output(int level);
     void typeCheck();
@@ -102,6 +103,7 @@ private:
 public:
     Id(SymbolEntry *se, ExprNode* arrIdx = nullptr)
         : ExprNode(se), arrIdx(arrIdx) {
+            type = se->getType();
             SymbolEntry *temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel());
             dst = new Operand(temp);
         };
