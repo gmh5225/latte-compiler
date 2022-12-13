@@ -29,6 +29,26 @@ public:
     // You can add any function you need here.
 };
 
+// symbol table managing identifier symbol entries
+class SymbolTable
+{
+private:
+    std::map<std::string, SymbolEntry*> symbolTable;
+    SymbolTable *prev;
+    int level;
+    static int counter;
+public:
+    SymbolTable();
+    SymbolTable(SymbolTable *prev);
+    bool install(std::string name, SymbolEntry* entry);
+    SymbolEntry* lookup(std::string name);
+    SymbolTable* getPrev() {return prev;};
+    int getLevel() {return level;};
+    static int getLabel() {return counter++;};
+};
+
+extern SymbolTable *identifiers;
+extern SymbolTable *globals;
 
 /*  
     Symbol entry for literal constant. Example:
@@ -87,6 +107,7 @@ private:
     bool initial;
     Operand *addr;  // The address of the identifier.
     // You can add any field you need here.
+    int label;
 
 public:
     IdentifierSymbolEntry(Type *type, std::string name, int scope, int paramNo = -1, bool sysy = false);
@@ -105,6 +126,7 @@ public:
     Operand* getAddr() {return addr;};
     bool isSysy() const {return sysy;};
     // You can add any function you need here.
+    void setLabel() {label = SymbolTable::getLabel();};
 };
 
 
@@ -137,26 +159,4 @@ public:
     int getLabel() const {return label;};
     // You can add any function you need here.
 };
-
-// symbol table managing identifier symbol entries
-class SymbolTable
-{
-private:
-    std::map<std::string, SymbolEntry*> symbolTable;
-    SymbolTable *prev;
-    int level;
-    static int counter;
-public:
-    SymbolTable();
-    SymbolTable(SymbolTable *prev);
-    bool install(std::string name, SymbolEntry* entry);
-    SymbolEntry* lookup(std::string name);
-    SymbolTable* getPrev() {return prev;};
-    int getLevel() {return level;};
-    static int getLabel() {return counter++;};
-};
-
-extern SymbolTable *identifiers;
-extern SymbolTable *globals;
-
 #endif

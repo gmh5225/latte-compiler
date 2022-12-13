@@ -61,8 +61,7 @@ private:
     ExprNode *expr1, *expr2;
 public:
     enum {ADD, SUB, MUL, DIV, MOD, AND, OR, EQ, GEQ, LEQ, NEQ, GRA, LES};
-    BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) 
-    : ExprNode(se), op(op), expr1(expr1), expr2(expr2) {dst = new Operand(se);};
+    BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) ;
     int getValue();
     void output(int level);
     void typeCheck();

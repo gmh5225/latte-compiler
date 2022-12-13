@@ -23,7 +23,7 @@ public:
     void addUse(Instruction *inst) { uses.push_back(inst);};
     void removeUse(Instruction *inst);
     int usersNum() const {return uses.size();};
-
+    SymbolEntry* getSymPtr() {return se;};
     use_iterator use_begin() {return uses.begin();};
     use_iterator use_end() {return uses.end();};
     Type* getType() {return se->getType();};

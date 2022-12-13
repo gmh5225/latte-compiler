@@ -142,6 +142,17 @@ void BinaryExpr::genCode()
         expr2->genCode();
         Operand *src1 = expr1->getOperand();
         Operand *src2 = expr2->getOperand();
+        // 需要将i1零扩展为i32
+        if (src1->getType()->getSize() == 1) {
+            Operand* dst = new Operand(new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel()));
+            new ZextInstruction(dst, src1, bb);
+            src1 = dst;
+        }
+        if (src2->getType()->getSize() == 1) {
+            Operand* dst = new Operand(new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel()));
+            new ZextInstruction(dst, src2, bb);
+            src2 = dst;
+        }
         int opcode;
         switch (op) {
         case EQ:
@@ -166,6 +177,7 @@ void BinaryExpr::genCode()
             break;
         }
         new CmpInstruction(opcode, dst, src1, src2, bb);
+        dst->getSymPtr()->setType(TypeSystem::boolType);
         BasicBlock *truebb, *falsebb, *tempbb;
         truebb = new BasicBlock(func);
         falsebb = new BasicBlock(func);
@@ -222,7 +234,6 @@ void IfStmt::genCode()
     func = builder->getInsertBB()->getParent();
     then_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
-
     cond->genCode();
     backPatch(cond->trueList(), then_bb);
     backPatch(cond->falseList(), end_bb);
@@ -244,16 +255,13 @@ void IfElseStmt::genCode()
     then_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
     else_bb = new BasicBlock(func);
-
     cond->genCode();
     backPatch(cond->trueList(), then_bb);
     backPatch(cond->falseList(), else_bb);
-
     builder->setInsertBB(then_bb);
     thenStmt->genCode();
     then_bb = builder->getInsertBB();
     new UncondBrInstruction(end_bb, then_bb);
-
     builder->setInsertBB(else_bb);
     elseStmt->genCode();
     else_bb = builder->getInsertBB();
@@ -362,6 +370,8 @@ void ExprStmt::genCode() {
 }
 
 void CallFunc::genCode() {
+    if (((IdentifierSymbolEntry*)symbolEntry)->isSysy())
+        unit.insertLibfunc(symbolEntry);
     std::vector<Operand*> operands;
     ExprNode* temp = param;
     while (temp) {
@@ -439,12 +449,20 @@ void UnaryExpr::genCode() {
         new CmpInstruction(CmpInstruction::NEQ, temp, src, new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)), bb);
         src = temp;
         new XorInstruction(dst, src, bb);
+        type = src->getType();
     } 
     // -x的情况下，用0-x 
     else if (op == SUB) {
         BasicBlock* bb = builder->getInsertBB();
         Operand* src1 = new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0));
-        Operand* src2 = expr->getOperand();
+        Operand* src2;
+        // 将i1零扩展为i32
+        if (expr->getType()->getSize() == 1) {
+            src2 = new Operand(new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel()));
+            new ZextInstruction(src2, expr->getOperand(), bb);
+        } 
+        else
+            src2 = expr->getOperand();
         new BinaryInstruction(BinaryInstruction::SUB, dst, src1, src2, bb);
     }
 }
@@ -941,6 +959,14 @@ CallFunc::CallFunc(SymbolEntry* se, ExprNode* param) : ExprNode(se), param(param
 UnaryExpr::UnaryExpr(SymbolEntry* se, int op, ExprNode* expr): ExprNode(se), op(op), expr(expr) {
     type = TypeSystem::intType;
     dst = new Operand(se);
+};
+
+BinaryExpr::BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) 
+    : ExprNode(se), op(op), expr1(expr1), expr2(expr2) {
+    dst = new Operand(se);
+    if (op >= BinaryExpr::AND && op <= BinaryExpr::LES) {
+        this->symbolEntry->setType(TypeSystem::boolType);
+    }
 };
 
 int BinaryExpr::getValue() {

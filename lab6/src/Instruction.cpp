@@ -375,3 +375,27 @@ XorInstruction::~XorInstruction() {
         delete operands[0];
     operands[1]->removeUse(this);
 }
+
+// 零扩展，将i1扩展到i32
+ZextInstruction::ZextInstruction(Operand* dst,
+                                 Operand* src,
+                                 BasicBlock* insert_bb)
+    : Instruction(ZEXT, insert_bb) {
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+void ZextInstruction::output() const {
+    Operand* dst = operands[0];
+    Operand* src = operands[1];
+    fprintf(yyout, "  %s = zext %s %s to i32\n", dst->toStr().c_str(), src->getType()->toStr().c_str(), src->toStr().c_str());
+}
+
+ZextInstruction::~ZextInstruction() {
+    operands[0]->setDef(nullptr);
+    if (operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
