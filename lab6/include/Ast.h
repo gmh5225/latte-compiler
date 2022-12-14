@@ -35,6 +35,8 @@ public:
     Node* getNext() {return next;}
     std::vector<Instruction*>& trueList() {return true_list;}
     std::vector<Instruction*>& falseList() {return false_list;}
+    void pushBackTrue(Instruction *ins) {true_list.push_back(ins);}
+    void pushBackFalse(Instruction *ins) {false_list.push_back(ins);}
 };
 
 class ExprNode : public Node
@@ -52,6 +54,7 @@ public:
     void output(int level);
     void typeCheck();
     void genCode();
+    void intToBool();
 };
 
 class BinaryExpr : public ExprNode

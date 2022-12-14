@@ -352,10 +352,7 @@ CallInstruction::~CallInstruction() {
         operands[i]->removeUse(this);
 }
 
-XorInstruction::XorInstruction(Operand* dst,
-                               Operand* src,
-                               BasicBlock* insert_bb)
-    : Instruction(XOR, insert_bb) {
+XorInstruction::XorInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb): Instruction(XOR, insert_bb) {
     operands.push_back(dst);
     operands.push_back(src);
     dst->setDef(this);
@@ -377,10 +374,7 @@ XorInstruction::~XorInstruction() {
 }
 
 // 零扩展，将i1扩展到i32
-ZextInstruction::ZextInstruction(Operand* dst,
-                                 Operand* src,
-                                 BasicBlock* insert_bb)
-    : Instruction(ZEXT, insert_bb) {
+ZextInstruction::ZextInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb): Instruction(ZEXT, insert_bb) {
     operands.push_back(dst);
     operands.push_back(src);
     dst->setDef(this);
